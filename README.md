@@ -12,3 +12,8 @@ Please follow the following commands:
 roslaunch tum_ics_ur10_bringup bringUR10.launch
 roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 ```
+
+## Some Useful Path
+```bash
+\\wsl.localhost\Ubuntu-20.04\opt\ros\noetic\include\tum_ics_ur_robot_lli
+```
