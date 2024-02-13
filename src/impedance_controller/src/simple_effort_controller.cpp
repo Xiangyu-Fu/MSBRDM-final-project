@@ -1,4 +1,4 @@
-#include <tum_ics_ur10_controller/simple_effort_controller.h>
+#include <tum_ics_ur10_controller_tutorial/simple_effort_controller.h>
 
 #include <tum_ics_ur_robot_msgs/ControlData.h>
 

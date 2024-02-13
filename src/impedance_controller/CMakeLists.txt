@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(tum_ics_ur10_controller)
+project(impedance_controller)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

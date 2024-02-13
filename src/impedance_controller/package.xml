@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>tum_ics_ur10_controller</name>
+  <name>impedance_controller</name>
   <version>0.0.0</version>
   <description>Template files to create a Simple effort control for the universal robot UR10</description>
 
