@@ -1,11 +1,12 @@
 #include<tum_ics_ur_robot_lli/Robot/RobotArmConstrained.h>
-#include<tum_ics_ur10_controller_tutorial/simple_effort_controller.h>
+#include<impedance_controller/impedance_controller.h>
 #include<QApplication>
 
 int main(int argc, char **argv)
 {
     QApplication a(argc,argv);
 
+    
     ros::init(argc,argv,"testRobotArmClass",ros::init_options::AnonymousName);
 
     QString configFilePath=argv[1];
