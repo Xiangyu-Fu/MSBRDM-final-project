@@ -8,7 +8,7 @@ namespace tum_ics_ur_robot_lli
   namespace RobotControllers
   {
 
-    class SimpleEffortControl : public ControlEffort
+    class ImpedanceControl : public ControlEffort
     {
     private:
       bool is_first_iter_;
@@ -32,9 +32,9 @@ namespace tum_ics_ur_robot_lli
       Vector6d delta_qp_;
 
     public:
-      SimpleEffortControl(double weight = 1.0, const QString &name = "SimpleEffortCtrl");
+      ImpedanceControl(double weight = 1.0, const QString &name = "SimpleEffortCtrl");
 
-      ~SimpleEffortControl();
+      ~ImpedanceControl();
 
       void setQInit(const JointState &q_init);
 

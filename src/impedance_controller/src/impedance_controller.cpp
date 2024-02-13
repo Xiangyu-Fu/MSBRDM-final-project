@@ -7,7 +7,7 @@ namespace tum_ics_ur_robot_lli
   namespace RobotControllers
   {
 
-    SimpleEffortControl::SimpleEffortControl(double weight, const QString &name) : 
+    ImpedanceControl::ImpedanceControl(double weight, const QString &name) : 
       ControlEffort(name, SPLINE_TYPE, JOINT_SPACE, weight),
       is_first_iter_(true),
       Kp_(Matrix6d::Zero()),
@@ -21,33 +21,33 @@ namespace tum_ics_ur_robot_lli
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
     }
 
-    SimpleEffortControl::~SimpleEffortControl()
+    ImpedanceControl::~ImpedanceControl()
     {
     }
 
-    void SimpleEffortControl::setQInit(const JointState &q_init)
+    void ImpedanceControl::setQInit(const JointState &q_init)
     {
       q_init_ = q_init;
     }
-    void SimpleEffortControl::setQHome(const JointState &q_home)
+    void ImpedanceControl::setQHome(const JointState &q_home)
     {
       q_home_ = q_home;
     }
-    void SimpleEffortControl::setQPark(const JointState &q_park)
+    void ImpedanceControl::setQPark(const JointState &q_park)
     {
       q_park_ = q_park;
     }
 
-    bool SimpleEffortControl::init()
+    bool ImpedanceControl::init()
     {
-      ROS_WARN_STREAM("SimpleEffortControl::init");
+      ROS_WARN_STREAM("ImpedanceControl::init");
       std::vector<double> vec;
 
       // check namespace
       std::string ns = "~simple_effort_ctrl";
       if (!ros::param::has(ns))
       {
-        ROS_ERROR_STREAM("SimpleEffortControl init(): Control gains not defined in:" << ns);
+        ROS_ERROR_STREAM("ImpedanceControl init(): Control gains not defined in:" << ns);
         m_error = true;
         return false;
       }
@@ -108,13 +108,13 @@ namespace tum_ics_ur_robot_lli
       return true;
     }
 
-    bool SimpleEffortControl::start()
+    bool ImpedanceControl::start()
     {
-      ROS_WARN_STREAM("SimpleEffortControl::start");
+      ROS_WARN_STREAM("ImpedanceControl::start");
       return true;
     }
 
-    Vector6d SimpleEffortControl::update(const RobotTime &time, const JointState &state)
+    Vector6d ImpedanceControl::update(const RobotTime &time, const JointState &state)
     {
       if (is_first_iter_)
       {
@@ -169,7 +169,7 @@ namespace tum_ics_ur_robot_lli
       return tau;
     }
 
-    bool SimpleEffortControl::stop()
+    bool ImpedanceControl::stop()
     {
       return true;
     }
