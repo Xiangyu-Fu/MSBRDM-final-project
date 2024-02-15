@@ -10,7 +10,7 @@ sudo dpkg -i ros*
 ```
 
 ```bash
-catkin build -DTUM_ICS_USE_QT5=1
+catkin build
 ```
 
 > Note: If you face any issues with the build, please first see the [Issue #35](https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35).
