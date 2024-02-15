@@ -127,6 +127,12 @@ namespace tum_ics_ur_robot_lli
       Vector6d tau;
       tau.setZero();
 
+      // update time
+      ros::Time time_cur = ros::Time::now();
+      double dt = (time_cur - time_prev_).toSec();
+      time_prev_ = time_cur;
+      elapsed_ += dt;
+
       // poly spline
       VVector6d vQd;
       vQd = getJointPVT5(q_start_, q_goal_, time.tD(), spline_period_);
@@ -145,25 +151,25 @@ namespace tum_ics_ur_robot_lli
       Vector6d Sq = state.qp - js_r.qp;
       tau = -Kd_ * Sq;
 
-      // publish the ControlData (only for debugging)
-      tum_ics_ur_robot_msgs::ControlData msg;
-      msg.header.stamp = ros::Time::now();
-      msg.time = time.tD();
-      for (int i = 0; i < STD_DOF; i++)
-      {
-        msg.q[i] = state.q(i);
-        msg.qp[i] = state.qp(i);
-        msg.qpp[i] = state.qpp(i);
+      // // publish the ControlData (only for debugging)
+      // tum_ics_ur_robot_msgs::ControlData msg;
+      // msg.header.stamp = ros::Time::now();
+      // msg.time = time.tD();
+      // for (int i = 0; i < STD_DOF; i++)
+      // {
+      //   msg.q[i] = state.q(i);
+      //   msg.qp[i] = state.qp(i);
+      //   msg.qpp[i] = state.qpp(i);
 
-        msg.qd[i] = vQd[0](i);
-        msg.qpd[i] = vQd[1](i);
+      //   msg.qd[i] = vQd[0](i);
+      //   msg.qpd[i] = vQd[1](i);
 
-        msg.Dq[i] = delta_q_(i);
-        msg.Dqp[i] = delta_qp_(i);
+      //   msg.Dq[i] = delta_q_(i);
+      //   msg.Dqp[i] = delta_qp_(i);
 
-        msg.torques[i] = state.tau(i);
-      }
-      control_data_pub_.publish(msg);
+      //   msg.torques[i] = state.tau(i);
+      // }
+      // control_data_pub_.publish(msg);
 
       // ROS_WARN_STREAM("tau=" << tau.transpose());
       return tau;
