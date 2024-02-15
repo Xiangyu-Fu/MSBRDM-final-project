@@ -10,6 +10,8 @@ namespace tum_ics_ur_robot_lli
 
     class ImpedanceControl : public ControlEffort
     {
+    public:
+      enum Mode {INIT, JOINT, CARTESIAN};
     private:
       bool is_first_iter_;
 
@@ -31,8 +33,13 @@ namespace tum_ics_ur_robot_lli
       Vector6d delta_q_;
       Vector6d delta_qp_;
 
+      // new params for Cartesian control
+      Mode mode_;
+      ros::Time time_prev_;
+      double elapsed_;
+
     public:
-      ImpedanceControl(double weight = 1.0, const QString &name = "SimpleEffortCtrl");
+      ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
 
       ~ImpedanceControl();
 

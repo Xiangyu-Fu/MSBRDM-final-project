@@ -1,5 +1,14 @@
 # MSBRDM FINAL PROJECT
 ## Build
+
+install the pkg:
+
+```bash
+sudo dpkg -i tum*
+sudo dpkg -i lib*
+sudo dpkg -i ros*
+```
+
 ```bash
 catkin build -DTUM_ICS_USE_QT5=1
 ```
@@ -16,4 +25,9 @@ roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 ## Some Useful Path
 ```bash
 \\wsl.localhost\Ubuntu-20.04\opt\ros\noetic\include\tum_ics_ur_robot_lli
+```
+
+## Run the Impedance Controller
+```bash
+roslaunch impedance_controller impedance_controller.launch
 ```
