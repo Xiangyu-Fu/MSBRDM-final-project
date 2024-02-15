@@ -1,5 +1,5 @@
-#ifndef UR_ROBOT_LLI_SIMPLEEFFORTCONTROL_H
-#define UR_ROBOT_LLI_SIMPLEEFFORTCONTROL_H
+#ifndef UR_ROBOT_LLI_IMPEDANCECONTROL_H
+#define UR_ROBOT_LLI_IMPEDANCECONTROL_H
 
 #include <tum_ics_ur_robot_lli/RobotControllers/ControlEffort.h>
 
@@ -55,4 +55,4 @@ namespace tum_ics_ur_robot_lli
   } // namespace RobotControllers
 } // namespace tuics_ur_robot_lli
 
-#endif // UR_ROBOT_LLI_SIMPLEEFFORTCONTROL_H
+#endif // UR_ROBOT_LLI_IMPEDANCECONTROL_H
