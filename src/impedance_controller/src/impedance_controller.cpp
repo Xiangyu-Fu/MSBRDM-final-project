@@ -13,8 +13,8 @@ namespace tum_ics_ur_robot_lli
       Kp_(Matrix6d::Zero()),
       Kd_(Matrix6d::Zero()),
       Ki_(Matrix6d::Zero()),
-      q_goal_(Vector6d::Zero()),
-      spline_period_(100.0),
+      init_q_goal_(Vector6d::Zero()),
+      init_period_(100.0),
       delta_q_(Vector6d::Zero()),
       delta_qp_(Vector6d::Zero())
     {
@@ -80,8 +80,8 @@ namespace tum_ics_ur_robot_lli
       }
       ROS_WARN_STREAM("Kp: \n" << Kp_);
 
-      // GOAL
-      ros::param::get(ns + "/goal", vec);
+      // init joint position
+      ros::param::get(ns + "/init_q", vec);
       if (vec.size() < STD_DOF)
       {
         ROS_ERROR_STREAM("gains_p: wrong number of dimensions:" << vec.size());
@@ -90,21 +90,21 @@ namespace tum_ics_ur_robot_lli
       }
       for (int i = 0; i < STD_DOF; i++)
       {
-        q_goal_(i) = vec[i];
+        init_q_goal_(i) = vec[i];
       }
       
-      // total time
-      ros::param::get(ns + "/time", spline_period_);
-      if (!(spline_period_ > 0))
+      // init time
+      ros::param::get(ns + "/init_period", init_period_);
+      if (!(init_period_ > 0))
       {
-        ROS_ERROR_STREAM("spline_period_: is negative:" << spline_period_);
-        spline_period_ = 100.0;
+        ROS_ERROR_STREAM("init_period_: is negative:" << init_period_);
+        init_period_ = 100.0;
       }
 
-      ROS_WARN_STREAM("Goal [DEG]: \n" << q_goal_.transpose());
-      ROS_WARN_STREAM("Total Time [s]: " << spline_period_);
-      q_goal_ = DEG2RAD(q_goal_);
-      ROS_WARN_STREAM("Goal [RAD]: \n" << q_goal_.transpose());
+      ROS_WARN_STREAM("Goal [DEG]: \n" << init_q_goal_.transpose());
+      ROS_WARN_STREAM("Total Time [s]: " << init_period_);
+      init_q_goal_ = DEG2RAD(init_q_goal_);
+      ROS_WARN_STREAM("Goal [RAD]: \n" << init_q_goal_.transpose());
       return true;
     }
 
@@ -120,59 +120,123 @@ namespace tum_ics_ur_robot_lli
       {
         q_start_ = state.q;
         ROS_WARN_STREAM("START [DEG]: \n" << q_start_.transpose());
+        // Init time
+        time_prev_ = ros::Time::now();
+
+        // Init mode
+        control_mode_ = INIT;
         is_first_iter_ = false;
       }
 
-      // control torque
-      Vector6d tau;
-      tau.setZero();
-
-      // update time
+      //////////////////////////////
+      // TIME UPDATE
+      //////////////////////////////
       ros::Time time_cur = ros::Time::now();
       double dt = (time_cur - time_prev_).toSec();
       time_prev_ = time_cur;
-      elapsed_ += dt;
+      running_time_ += dt;
+      ROS_WARN_STREAM_THROTTLE(10, "Running Time [s]: " << time.tD());
 
-      // poly spline
-      VVector6d vQd;
-      vQd = getJointPVT5(q_start_, q_goal_, time.tD(), spline_period_);
+      //////////////////////////////
+      // INIT MODE
+      //////////////////////////////
+      if(control_mode_ == INIT)
+      {
+        if(time.tD() > init_period_)
+        {
+          control_mode_ = JOINT;
+          q_start_ = state.q;
+          q_goal_ = state.q;
+          running_time_ = 0.0;
+          ROS_WARN_STREAM("Switching to JOINT mode");
+        }
+        // control torque
+        Vector6d tau;
+        tau.setZero();
 
-      // erros
-      delta_q_ = state.q - vQd[0];
-      delta_qp_ = state.qp - vQd[1];
+        // poly spline
+        VVector6d vQd;
+        vQd = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
 
-      // reference
-      JointState js_r;
-      js_r = state;
-      js_r.qp = vQd[1] - Kp_ * delta_q_;
-      js_r.qpp = vQd[2] - Kp_ * delta_qp_;
+        // erros
+        delta_q_ = state.q - vQd[0];
+        delta_qp_ = state.qp - vQd[1];
 
-      // torque
-      Vector6d Sq = state.qp - js_r.qp;
-      tau = -Kd_ * Sq;
+        // reference
+        JointState js_r;
+        js_r = state;
+        js_r.qp = vQd[1] - Kp_ * delta_q_;
+        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
 
-      // // publish the ControlData (only for debugging)
-      // tum_ics_ur_robot_msgs::ControlData msg;
-      // msg.header.stamp = ros::Time::now();
-      // msg.time = time.tD();
-      // for (int i = 0; i < STD_DOF; i++)
-      // {
-      //   msg.q[i] = state.q(i);
-      //   msg.qp[i] = state.qp(i);
-      //   msg.qpp[i] = state.qpp(i);
+        // torque
+        Vector6d Sq = state.qp - js_r.qp;
+        tau = -Kd_ * Sq;
+        return tau;
+      }
 
-      //   msg.qd[i] = vQd[0](i);
-      //   msg.qpd[i] = vQd[1](i);
+      //////////////////////////////
+      // JOINT MODE
+      //////////////////////////////
+      else if(control_mode_ == JOINT)
+      {
+        // control torque
+        Vector6d tau;
+        tau.setZero();
 
-      //   msg.Dq[i] = delta_q_(i);
-      //   msg.Dqp[i] = delta_qp_(i);
+        // poly spline
+        VVector6d vQd;
+        vQd = getJointPVT5(q_start_, q_goal_, running_time_, 5.0);
 
-      //   msg.torques[i] = state.tau(i);
-      // }
-      // control_data_pub_.publish(msg);
+        // erros
+        delta_q_ = state.q - vQd[0];
+        delta_qp_ = state.qp - vQd[1];
 
-      // ROS_WARN_STREAM("tau=" << tau.transpose());
-      return tau;
+        // reference
+        JointState js_r;
+        js_r = state;
+        js_r.qp = vQd[1] - Kp_ * delta_q_;
+        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
+
+        // torque
+        Vector6d Sq = state.qp - js_r.qp;
+        tau = -Kd_ * Sq;
+        return tau;
+      }
+
+      //////////////////////////////
+      // CARTESIAN MODE
+      //////////////////////////////
+      else if(control_mode_ == CARTESIAN)
+      {
+        // control torque
+        Vector6d tau;
+        tau.setZero();
+
+        // poly spline
+        VVector6d vQd;
+        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
+
+        // erros
+        delta_q_ = state.q - vQd[0];
+        delta_qp_ = state.qp - vQd[1];
+
+        // reference
+        JointState js_r;
+        js_r = state;
+        js_r.qp = vQd[1] - Kp_ * delta_q_;
+        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
+
+        // torque
+        Vector6d Sq = state.qp - js_r.qp;
+        tau = -Kd_ * Sq;
+        return tau;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("ImpedanceControl::update: Unknown control mode");
+        return Vector6d::Zero();
+      }
+
     }
 
     bool ImpedanceControl::stop()

@@ -343,6 +343,7 @@ namespace tum_ics_ur_robot_lli
         auto delta_t = (ros::Time::now() - last_update_time_).toSec();
 
         if (should_respline_) {
+
           // ROS_WARN_STREAM("Respline!");
           X_start_ = model_.T_ef_0(state.q);
           elapsed_ = 0;
@@ -358,7 +359,7 @@ namespace tum_ics_ur_robot_lli
 
           x_start.head(3) = X_start_.linear();
           x_goal.head(3) = X_goal_.linear();
-          // ROS_WARN_STREAM("x_goal ** = " << x_goal);
+          ROS_WARN_STREAM("x_goal ** = " << x_goal);
 
           // compute duration of spline
           Vector3d delta_x, vec;
@@ -400,7 +401,7 @@ namespace tum_ics_ur_robot_lli
           counter_ = 0;
           holding_ = true;
           last_update_time_ = ros::Time::now();
-          // ROS_INFO_STREAM_THROTTLE(1.0, "X_goal lin = " << X_goal_.linear().toString());
+          ROS_INFO_STREAM_THROTTLE(1.0, "X_goal lin = " << X_goal_.linear().toString());
           // ROS_INFO_STREAM_THROTTLE(1.0, "X_goal ang = " << X_goal_.angular().toString());
           double decay = pow(speed_degration_, counter_);
           x_state_des_.pos() << X_goal_.linear();
@@ -557,7 +558,7 @@ namespace tum_ics_ur_robot_lli
       Eigen::AngleAxisd aa(x_state_cur_.pos().angular()*des.pos().angular().inverse());
       X_delta.angular() = aa.angle()*aa.axis();
 
-      ROS_INFO_STREAM_THROTTLE(1.0, "setting X_delta to: " << X_delta.transpose());
+      // ROS_INFO_STREAM_THROTTLE(1.0, "setting X_delta to: " << X_delta.transpose());
 
       cc::CartesianVector Xp_delta;
       Xp_delta = x_state_cur_.vel() - x_state_des_.vel();

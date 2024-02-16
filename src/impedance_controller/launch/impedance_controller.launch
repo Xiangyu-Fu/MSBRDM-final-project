@@ -12,7 +12,7 @@
     <rosparam file="$(find tum_ics_ur_robot_controllers)/launch/configs/pidInt.yaml" command="load" />
 
     <!-- controller parameter --> 
-    <rosparam file="$(find impedance_controller)/launch/configs/simpleEffortCtrl.yaml" command="load" />
+    <rosparam file="$(find impedance_controller)/launch/configs/impedanceCtrl.yaml" command="load" />
     
   </node>
 

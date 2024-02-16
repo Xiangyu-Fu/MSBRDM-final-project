@@ -12,7 +12,7 @@ blue_ctrl:
  gains_i: [0,0,0,0,0,0]
 
  # Desired position in deg [J1, J2, J3, J4, J5, J6]
- goal: [0, -85, 65, -70, 90, 0]
+ goal: [0, -70, -90, -90, 90, 0]
 
  # Cartesian Pose for relative to initial pose
  goal_c: [0.2, 0.2, 0, 0, 0.7096491, 0, 0.7045553] # x y z qx qy qz qw
@@ -21,7 +21,7 @@ blue_ctrl:
  learning_rate: 0.1 #0.001
 
  # parametrization of splines in trajectory generators
- spline_duration: 25.0 # WITH HARDWARE SET TO 25.0
+ spline_duration: 5.0 # WITH HARDWARE SET TO 25.0
  spline_speed: 0.18 # (m/s))
  speed_degration: 0.97
  spline_type: 2

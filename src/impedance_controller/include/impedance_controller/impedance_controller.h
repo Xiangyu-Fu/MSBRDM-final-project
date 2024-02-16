@@ -33,10 +33,15 @@ namespace tum_ics_ur_robot_lli
       Vector6d delta_q_;
       Vector6d delta_qp_;
 
-      // new params for Cartesian control
-      Mode mode_;
+      // global params
+      Mode control_mode_;
       ros::Time time_prev_;
-      double elapsed_;
+      double running_time_;
+
+      // params for init procedure
+      double init_period_;
+      Vector6d init_q_goal_;
+
 
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
