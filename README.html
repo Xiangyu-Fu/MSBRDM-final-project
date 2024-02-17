@@ -153,11 +153,14 @@ sudo dpkg -i ros*
 <pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
 roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 </code></pre>
-<h2 id="some-useful-path">Some Useful Path</h2>
-<pre><code class="language-bash">\\wsl.localhost\Ubuntu-20.04\opt\ros\noetic\include\tum_ics_ur_robot_lli
-</code></pre>
-<h2 id="run-the-impedance-controller">Run the Impedance Controller</h2>
+<h2 id="impedance-controller">Impedance Controller</h2>
+<h3 id="run-the-impedance-controller">Run the Impedance Controller</h3>
 <pre><code class="language-bash">roslaunch impedance_controller impedance_controller.launch
+</code></pre>
+<h3 id="rosservice">RosService</h3>
+<p>Move the arm to a specific joint position:</p>
+<pre><code class="language-bash">rosservice call /move_arm_joint <span class="hljs-string">&quot;{joint0: 0.0, joint1: -1.0, joint2: -1.0, 
+joint3: -1.0, joint4: 1.0, joint5: 0.0}&quot;</span>
 </code></pre>
 
             

@@ -1,13 +1,13 @@
 #include <impedance_controller/impedance_controller.h>
-
 #include <tum_ics_ur_robot_msgs/ControlData.h>
+
 
 namespace tum_ics_ur_robot_lli
 {
   namespace RobotControllers
   {
 
-    ImpedanceControl::ImpedanceControl(double weight, const QString &name) : 
+    ImpedanceControl::ImpedanceControl(double weight, const QString &name, ros::NodeHandle nh) : 
       ControlEffort(name, SPLINE_TYPE, JOINT_SPACE, weight),
       is_first_iter_(true),
       Kp_(Matrix6d::Zero()),
@@ -16,9 +16,16 @@ namespace tum_ics_ur_robot_lli
       init_q_goal_(Vector6d::Zero()),
       init_period_(100.0),
       delta_q_(Vector6d::Zero()),
-      delta_qp_(Vector6d::Zero())
+      delta_qp_(Vector6d::Zero()),
+      nh_(nh)
     {
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
+
+      // Start two Services
+      move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
+      move_arm_joint_service_ = nh_.advertiseService("move_arm_joint", &ImpedanceControl::moveArmJoint, this);
+      ROS_INFO_STREAM("ImpedanceControl: Services started");
+
     }
 
     ImpedanceControl::~ImpedanceControl()
@@ -36,6 +43,48 @@ namespace tum_ics_ur_robot_lli
     void ImpedanceControl::setQPark(const JointState &q_park)
     {
       q_park_ = q_park;
+    }
+
+    bool ImpedanceControl::moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res)
+    {
+        ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
+        return true;
+    }
+
+    bool ImpedanceControl::moveArmJoint(impedance_controller::MoveArmJoint::Request &req, impedance_controller::MoveArmJoint::Response &res)
+    {
+        ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
+
+        control_mode_ = JOINT;
+        running_time_ = 0.0;
+        q_start_ = joint_state_.q;
+        q_goal_(0) = req.joint0;
+        q_goal_(1) = req.joint1;
+        q_goal_(2) = req.joint2;
+        q_goal_(3) = req.joint3;
+        q_goal_(4) = req.joint4;
+        q_goal_(5) = req.joint5;
+
+        // find the max difference between the current and the goal position
+        double max_diff = 0.0;
+        for (int i = 0; i < STD_DOF; i++)
+        {
+          double diff = fabs(q_goal_(i) - joint_state_.q(i));
+          if (diff > max_diff)
+          {
+            max_diff = diff;
+          }
+        }
+        // debug info
+        // print current joint state
+        std::cout << "Current joint state: " << joint_state_.q.transpose() << std::endl;
+        // print goal joint state
+        std::cout << "Goal joint state: " << q_goal_.transpose() << std::endl;
+
+        spline_period_ = max_diff * 3;
+
+        ROS_WARN_STREAM("Switching to JOINT mode");
+        return true;
     }
 
     bool ImpedanceControl::init()
@@ -135,14 +184,14 @@ namespace tum_ics_ur_robot_lli
       double dt = (time_cur - time_prev_).toSec();
       time_prev_ = time_cur;
       running_time_ += dt;
+      joint_state_ = state;
       ROS_WARN_STREAM_THROTTLE(10, "Running Time [s]: " << time.tD());
 
+
       //////////////////////////////
-      // INIT MODE
+      // CONTROL MODE
       //////////////////////////////
-      if(control_mode_ == INIT)
-      {
-        if(time.tD() > init_period_)
+      if(time.tD() > init_period_ && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
           q_start_ = state.q;
@@ -150,6 +199,12 @@ namespace tum_ics_ur_robot_lli
           running_time_ = 0.0;
           ROS_WARN_STREAM("Switching to JOINT mode");
         }
+
+      //////////////////////////////
+      // INIT MODE
+      //////////////////////////////
+      if(control_mode_ == INIT)
+      {
         // control torque
         Vector6d tau;
         tau.setZero();
@@ -174,6 +229,8 @@ namespace tum_ics_ur_robot_lli
         return tau;
       }
 
+      // FIXME: there always a joint error between the goal and the current position
+
       //////////////////////////////
       // JOINT MODE
       //////////////////////////////
@@ -182,10 +239,9 @@ namespace tum_ics_ur_robot_lli
         // control torque
         Vector6d tau;
         tau.setZero();
-
         // poly spline
         VVector6d vQd;
-        vQd = getJointPVT5(q_start_, q_goal_, running_time_, 5.0);
+        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_); // TODO: spline_period_ needs to be defined
 
         // erros
         delta_q_ = state.q - vQd[0];

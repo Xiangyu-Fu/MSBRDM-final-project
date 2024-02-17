@@ -2,6 +2,9 @@
 #define UR_ROBOT_LLI_IMPEDANCECONTROL_H
 
 #include <tum_ics_ur_robot_lli/RobotControllers/ControlEffort.h>
+#include "impedance_controller/MoveArmCartesian.h"
+#include "impedance_controller/MoveArmJoint.h"
+#include<ros/ros.h>
 
 namespace tum_ics_ur_robot_lli
 {
@@ -12,6 +15,7 @@ namespace tum_ics_ur_robot_lli
     {
     public:
       enum Mode {INIT, JOINT, CARTESIAN};
+      
     private:
       bool is_first_iter_;
 
@@ -33,19 +37,25 @@ namespace tum_ics_ur_robot_lli
       Vector6d delta_q_;
       Vector6d delta_qp_;
 
+      // rosservices
+      ros::ServiceServer move_arm_cartesian_service_;
+      ros::ServiceServer move_arm_joint_service_;
+
       // global params
       Mode control_mode_;
       ros::Time time_prev_;
       double running_time_;
+      JointState joint_state_;
 
       // params for init procedure
       double init_period_;
       Vector6d init_q_goal_;
 
-
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
-
+      
+      ImpedanceControl(double weight, const QString &name, ros::NodeHandle nh);
+    
       ~ImpedanceControl();
 
       void setQInit(const JointState &q_init);
@@ -53,6 +63,10 @@ namespace tum_ics_ur_robot_lli
       void setQHome(const JointState &q_home);
 
       void setQPark(const JointState &q_park);
+
+      // Two services
+      bool moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res);
+      bool moveArmJoint(impedance_controller::MoveArmJoint::Request &req, impedance_controller::MoveArmJoint::Response &res);
 
     private:
       bool init();

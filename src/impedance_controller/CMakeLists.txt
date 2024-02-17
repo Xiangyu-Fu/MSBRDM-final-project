@@ -16,6 +16,19 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 
+
+add_service_files(
+  FILES
+  MoveArmCartesian.srv
+  MoveArmJoint.srv
+)
+
+
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 ##############################################################################
 # Eigen
 ##############################################################################
@@ -63,7 +76,10 @@ include_directories(
   ${roscpp_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/srv
 )
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -Wno-cpp -O3" )
 set(CMAKE_BUILD_TYPE Release)
 

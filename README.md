@@ -22,12 +22,16 @@ roslaunch tum_ics_ur10_bringup bringUR10.launch
 roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 ```
 
-## Some Useful Path
-```bash
-\\wsl.localhost\Ubuntu-20.04\opt\ros\noetic\include\tum_ics_ur_robot_lli
-```
+## Impedance Controller
 
-## Run the Impedance Controller
+### Run the Impedance Controller
 ```bash
 roslaunch impedance_controller impedance_controller.launch
+```
+
+### RosService
+Move the arm to a specific joint position:
+```bash
+rosservice call /move_arm_joint "{joint0: 0.0, joint1: -1.0, joint2: -1.0, 
+joint3: -1.0, joint4: 1.0, joint5: 0.0}"
 ```

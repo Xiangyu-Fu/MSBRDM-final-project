@@ -7,6 +7,7 @@ int main(int argc, char **argv)
     QApplication a(argc,argv);
 
     ros::init(argc,argv,"ImpedanceCtrlNode",ros::init_options::AnonymousName);
+    ros::NodeHandle n;
 
     QString configFilePath=argv[1];
     ROS_INFO_STREAM("Config File: " << configFilePath.toStdString().c_str());
@@ -20,14 +21,15 @@ int main(int argc, char **argv)
 
     // create controller
     ROS_INFO_STREAM("Create Controller");
-    tum_ics_ur_robot_lli::RobotControllers::ImpedanceControl controller(1.0, "ImpedanceCtrl");
-
+    tum_ics_ur_robot_lli::RobotControllers::ImpedanceControl controller(1.0, "ImpedanceCtrl", n);
+    
     //The control must be connected to the robot after the init()-->The dynamic model needs to
     ROS_INFO_STREAM("Add Controller");
     if(!robot.add(&controller))
     {
         return -1;
     }
+
     controller.setQHome(robot.qHome());
     controller.setQPark(robot.qPark());
 
