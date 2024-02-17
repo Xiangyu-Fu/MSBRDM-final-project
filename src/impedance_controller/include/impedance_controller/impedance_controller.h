@@ -6,6 +6,9 @@
 #include "impedance_controller/MoveArmJoint.h"
 #include<ros/ros.h>
 
+// FIXME: use blue_controller/BlueControl.h as a template
+#include <ur_model/ur_model.h>
+
 namespace tum_ics_ur_robot_lli
 {
   namespace RobotControllers
@@ -45,12 +48,18 @@ namespace tum_ics_ur_robot_lli
       Mode control_mode_;
       ros::Time time_prev_;
       double running_time_;
-      JointState joint_state_;
 
       // params for init procedure
       double init_period_;
       Vector6d init_q_goal_;
 
+      // params for joint control
+      JointState joint_state_;
+
+      // FIXME: params for cartesian control
+      ur::URModel model_; 
+      cc::CartesianPosition ee_start_, ee_goal_;
+      
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
       

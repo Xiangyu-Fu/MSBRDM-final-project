@@ -48,13 +48,23 @@ namespace tum_ics_ur_robot_lli
     bool ImpedanceControl::moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res)
     {
         ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
+        control_mode_ = CARTESIAN;
+        running_time_ = 0.0;
+        ee_start_ = model_.T_ef_0(joint_state_.q);
+        ee_goal_.linear() << req.x, req.y, req.z;
+        // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
+        ee_goal_.angular() = Eigen::Quaterniond(1, 0, 0, 0);
+        
+        double dist = (ee_goal_.linear() - ee_start_.linear()).norm();
+        spline_period_ = dist * 3;
+
+        std::cout << "spline_period_: " << spline_period_ << std::endl;
         return true;
     }
 
     bool ImpedanceControl::moveArmJoint(impedance_controller::MoveArmJoint::Request &req, impedance_controller::MoveArmJoint::Response &res)
     {
         ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
-
         control_mode_ = JOINT;
         running_time_ = 0.0;
         q_start_ = joint_state_.q;
@@ -178,7 +188,8 @@ namespace tum_ics_ur_robot_lli
       }
 
       //////////////////////////////
-      // TIME UPDATE
+      // PARMAS UPDATE
+      // This part aim to update the global parameters of the controller
       //////////////////////////////
       ros::Time time_cur = ros::Time::now();
       double dt = (time_cur - time_prev_).toSec();
@@ -241,8 +252,7 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
         // poly spline
         VVector6d vQd;
-        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_); // TODO: spline_period_ needs to be defined
-
+        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
         // erros
         delta_q_ = state.q - vQd[0];
         delta_qp_ = state.qp - vQd[1];
@@ -270,7 +280,13 @@ namespace tum_ics_ur_robot_lli
 
         // poly spline
         VVector6d vQd;
-        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
+        vQd = getJointPVT5(ee_start_.head(3), ee_goal_.head(3), running_time_, spline_period_);
+
+        // FIXME: Finish the cartesian control
+        std::cout << "vQd[0]: " << vQd[0].transpose() << std::endl;
+        std::cout << "vQd[1]: " << vQd[1].transpose() << std::endl;
+        std::cout << "vQd[2]: " << vQd[2].transpose() << std::endl;
+
 
         // erros
         delta_q_ = state.q - vQd[0];
