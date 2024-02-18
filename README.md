@@ -1,22 +1,11 @@
 # MSBRDM FINAL PROJECT
-## Build
 
-install the pkg:
-
-```bash
-sudo dpkg -i tum*
-sudo dpkg -i lib*
-sudo dpkg -i ros*
-```
-
-```bash
-catkin build
-```
-
-> Note: If you face any issues with the build, please first see the [Issue #35](https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35).
+## TODO
+- [x] Add the ROS Service for Joint Control
+- [ ] Add the ROS Service for Cartesian Control
+- [ ] VS Code debugger for the ROS nodes
 
 ## Impedance Controller
-
 ### Run the Impedance Controller
 ```bash
 roslaunch tum_ics_ur10_bringup bringUR10.launch
@@ -39,6 +28,23 @@ Move the arm to a specific pose [ON PROGRESS]:
 ```bash
 rosservice call /move_arm_cartesian "{x: 0.5, y: -0.2, z: 0.7, rx: 0.0, ry: 0.0, rz: 0.0}"
 ```
+
+## Build
+
+install the pkg:
+
+```bash
+sudo dpkg -i tum*
+sudo dpkg -i lib*
+sudo dpkg -i ros*
+```
+
+```bash
+catkin build
+```
+
+> Note: If you face any issues with the build, please first see the [Issue #35](https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35).
+
 
 
 ## Run the Test Environment

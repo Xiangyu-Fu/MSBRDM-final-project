@@ -137,17 +137,12 @@
         </head>
         <body class="vscode-body vscode-light">
             <h1 id="msbrdm-final-project">MSBRDM FINAL PROJECT</h1>
-<h2 id="build">Build</h2>
-<p>install the pkg:</p>
-<pre><code class="language-bash">sudo dpkg -i tum*
-sudo dpkg -i lib*
-sudo dpkg -i ros*
-</code></pre>
-<pre><code class="language-bash">catkin build
-</code></pre>
-<blockquote>
-<p>Note: If you face any issues with the build, please first see the <a href="https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35">Issue #35</a>.</p>
-</blockquote>
+<h2 id="todo">TODO</h2>
+<ul class="contains-task-list">
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> Add the ROS Service for Joint Control</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> Add the ROS Service for Cartesian Control</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> VS Code debugger for the ROS nodes</li>
+</ul>
 <h2 id="impedance-controller">Impedance Controller</h2>
 <h3 id="run-the-impedance-controller">Run the Impedance Controller</h3>
 <pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
@@ -164,6 +159,17 @@ roslaunch impedance_controller impedance_controller.launch
 <p>Move the arm to a specific pose [ON PROGRESS]:</p>
 <pre><code class="language-bash">rosservice call /move_arm_cartesian <span class="hljs-string">&quot;{x: 0.5, y: -0.2, z: 0.7, rx: 0.0, ry: 0.0, rz: 0.0}&quot;</span>
 </code></pre>
+<h2 id="build">Build</h2>
+<p>install the pkg:</p>
+<pre><code class="language-bash">sudo dpkg -i tum*
+sudo dpkg -i lib*
+sudo dpkg -i ros*
+</code></pre>
+<pre><code class="language-bash">catkin build
+</code></pre>
+<blockquote>
+<p>Note: If you face any issues with the build, please first see the <a href="https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35">Issue #35</a>.</p>
+</blockquote>
 <h2 id="run-the-test-environment">Run the Test Environment</h2>
 <p>Please follow the following commands:</p>
 <pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
