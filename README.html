@@ -157,12 +157,15 @@ roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 <h3 id="run-the-impedance-controller">Run the Impedance Controller</h3>
 <pre><code class="language-bash">roslaunch impedance_controller impedance_controller.launch
 </code></pre>
+<h3 id="test-the-impedance-controller">Test the Impedance Controller</h3>
+<pre><code class="language-bash">rosrun knob_controller knob_control.py
+</code></pre>
 <h3 id="rosservice">RosService</h3>
 <p>Move the arm to a specific joint position:</p>
 <pre><code class="language-bash">rosservice call /move_arm_joint <span class="hljs-string">&quot;{joint0: 0.0, joint1: -1.0, joint2: -1.0, joint3: -1.0, joint4: 1.0, joint5: 0.0}&quot;</span>
 </code></pre>
 <p>Move the arm to a specific pose [ON PROGRESS]:</p>
-<pre><code class="language-bash">rosservice call /move_arm_cartesian <span class="hljs-string">&quot;{x: 0.5, y: -0.2, z: 1.0, rx: 0.0, ry: 0.0, rz: 0.0}&quot;</span>
+<pre><code class="language-bash">rosservice call /move_arm_cartesian <span class="hljs-string">&quot;{x: 0.5, y: -0.2, z: 0.7, rx: 0.0, ry: 0.0, rz: 0.0}&quot;</span>
 </code></pre>
 
             

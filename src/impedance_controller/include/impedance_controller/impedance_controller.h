@@ -5,6 +5,7 @@
 #include "impedance_controller/MoveArmCartesian.h"
 #include "impedance_controller/MoveArmJoint.h"
 #include<ros/ros.h>
+#include <Eigen/Dense>
 
 // FIXME: use blue_controller/BlueControl.h as a template
 #include <ur_model/ur_model.h>
@@ -58,9 +59,12 @@ namespace tum_ics_ur_robot_lli
 
       // FIXME: params for cartesian control
       ur::URModel model_; 
-      cc::CartesianPosition ee_start_, ee_goal_;
-      cc::CartesianState ee_pose_, x_state_des_;
-      VectorXd theta_; 
+      cc::CartesianState ee_start_, ee_goal_;
+      cc::CartesianState X_, Xd_, Xr_;
+
+      // params for Regressor
+      VectorXd theta_;
+      double gamma_; 
       
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
@@ -86,11 +90,7 @@ namespace tum_ics_ur_robot_lli
 
       Vector6d update(const RobotTime &time, const JointState &state);
 
-      Vector6d cartesianSpaceControl(const JointState &cur, const cc::CartesianState &des, double dt);
-
-      Vector6d computeYrTh(const Vector6d &S_q, const JointState &cur, const JointState &ref, double dt);
-
-      Matrix6d computeDampenedJacobianInverse(const cc::Jacobian& J, double lambda);
+      cc::CartesianState genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period);
 
       bool stop();
     };

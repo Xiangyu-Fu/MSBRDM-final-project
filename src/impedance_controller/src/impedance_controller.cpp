@@ -48,63 +48,74 @@ namespace tum_ics_ur_robot_lli
 
     bool ImpedanceControl::moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res)
     {
-        ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
-        control_mode_ = CARTESIAN;
-        running_time_ = 0.0;
+      if(control_mode_ == INIT)
+      {
+        ROS_WARN_STREAM("ImpedanceControl: moveArmJoint: INIT mode, cannot switch to JOINT mode");
+        return false;
+      }
+      ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
+      control_mode_ = CARTESIAN;
+      running_time_ = 0.0;
 
-        // get the current joint state
-        auto T_ef_0 = model_.T_ef_0(joint_state_.q);
-        std::cout << "T_ef_0: " << T_ef_0.translation().transpose() << std::endl;
-        ee_start_.linear() = T_ef_0.translation();
-        ee_start_.angular() = T_ef_0.rotation();
+      // get the current joint state
+      auto T_ef_0 = model_.T_ef_0(joint_state_.q);
+      // std::cout << "T_ef_0: " << T_ef_0.translation().transpose() << std::endl;
 
-        // set the goal
-        ee_goal_.linear() << req.x, req.y, req.z;
-        // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
-        ee_goal_.angular() = Eigen::Quaterniond(1, 0, 0, 0);
-        
-        double dist = (ee_goal_.linear() - ee_start_.linear()).norm();
-        spline_period_ = 10;
+      ee_start_.pos().linear() = T_ef_0.translation();
+      ee_start_.pos().angular() = T_ef_0.rotation();
 
-        std::cout << "ee_start_: " << ee_start_.linear().transpose() << std::endl;
-        std::cout << "ee_goal_: " << ee_goal_.linear().transpose() << std::endl;
-        std::cout << "spline_period_: " << spline_period_ << std::endl;
-        return true;
+      // set the goal
+      ee_goal_.pos().linear() << req.x, req.y, req.z;
+      // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
+      ee_goal_.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
+      
+      double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
+      spline_period_ = 100 * dist;
+
+      std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
+      std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
+      std::cout << "spline_period_: " << spline_period_ << std::endl;
+      return true;
     }
 
     bool ImpedanceControl::moveArmJoint(impedance_controller::MoveArmJoint::Request &req, impedance_controller::MoveArmJoint::Response &res)
-    {
-        ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
-        control_mode_ = JOINT;
-        running_time_ = 0.0;
-        q_start_ = joint_state_.q;
-        q_goal_(0) = req.joint0;
-        q_goal_(1) = req.joint1;
-        q_goal_(2) = req.joint2;
-        q_goal_(3) = req.joint3;
-        q_goal_(4) = req.joint4;
-        q_goal_(5) = req.joint5;
+    { 
+      if(control_mode_ == INIT)
+      {
+        ROS_WARN_STREAM("ImpedanceControl: moveArmJoint: INIT mode, cannot switch to JOINT mode");
+        return false;
+      }
+      ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
+      control_mode_ = JOINT;
+      running_time_ = 0.0;
+      q_start_ = joint_state_.q;
+      q_goal_(0) = req.joint0;
+      q_goal_(1) = req.joint1;
+      q_goal_(2) = req.joint2;
+      q_goal_(3) = req.joint3;
+      q_goal_(4) = req.joint4;
+      q_goal_(5) = req.joint5;
 
-        // find the max difference between the current and the goal position
-        double max_diff = 0.0;
-        for (int i = 0; i < STD_DOF; i++)
+      // find the max difference between the current and the goal position
+      double max_diff = 0.0;
+      for (int i = 0; i < STD_DOF; i++)
+      {
+        double diff = fabs(q_goal_(i) - joint_state_.q(i));
+        if (diff > max_diff)
         {
-          double diff = fabs(q_goal_(i) - joint_state_.q(i));
-          if (diff > max_diff)
-          {
-            max_diff = diff;
-          }
+          max_diff = diff;
         }
-        // debug info
-        // print current joint state
-        std::cout << "Current joint state: " << joint_state_.q.transpose() << std::endl;
-        // print goal joint state
-        std::cout << "Goal joint state: " << q_goal_.transpose() << std::endl;
+      }
+      // debug info
+      // print current joint state
+      std::cout << "Current joint state: " << joint_state_.q.transpose() << std::endl;
+      // print goal joint state
+      std::cout << "Goal joint state: " << q_goal_.transpose() << std::endl;
 
-        spline_period_ = max_diff * 3;
+      spline_period_ = max_diff * 3;
 
-        ROS_WARN_STREAM("Switching to JOINT mode");
-        return true;
+      ROS_WARN_STREAM("Switching to JOINT mode");
+      return true;
     }
 
     bool ImpedanceControl::init()
@@ -170,6 +181,14 @@ namespace tum_ics_ur_robot_lli
         return false;  
       }
       theta_ = model_.parameterInitalGuess();
+
+      ros::param::get(ns + "/learning_rate", gamma_);
+      if (!(gamma_ > 0))
+      {
+        ROS_ERROR_STREAM("gamma_: is negative:" << gamma_);
+        gamma_ = 0.1;
+      }
+      ROS_WARN_STREAM("gamma_: " << gamma_);
       
       // init time
       ros::param::get(ns + "/init_period", init_period_);
@@ -204,6 +223,9 @@ namespace tum_ics_ur_robot_lli
         // Init mode
         control_mode_ = INIT;
         is_first_iter_ = false;
+
+        // Init model
+        theta_ = model_.parameterInitalGuess();
       }
 
       //////////////////////////////
@@ -215,15 +237,9 @@ namespace tum_ics_ur_robot_lli
       time_prev_ = time_cur;
       running_time_ += dt;
       joint_state_ = state;
-      auto T_ef_0 = model_.T_ef_0(state.q);
-      auto T_B_0 = model_.T_B_0();
-
-
-      // std::cout << "T_ef_0: " << T_B_0.toString() << std::endl;
-      // ee_pose_.pos().linear() = T_ef_0.translation();  
-      // ee_pose_.pos().angular() = T_ef_0.rotation();
-      // ROS_WARN_STREAM_THROTTLE(1, "Current EE pose: " << ee_pose_.pos().linear().transpose());
-      // ROS_WARN_STREAM_THROTTLE(10, "Running Time [s]: " << time.tD());
+      auto X_ee = model_.T_ef_0(state.q);
+      
+      ROS_INFO_STREAM_THROTTLE(1, "ImpedanceControl::update: Running time: " << X_ee.translation().transpose());
 
       //////////////////////////////
       // CONTROL MODE
@@ -236,6 +252,16 @@ namespace tum_ics_ur_robot_lli
           running_time_ = 0.0;
           ROS_WARN_STREAM("Switching to JOINT mode");
         }
+      
+      if(running_time_ > spline_period_ && control_mode_ == CARTESIAN)
+      {
+        control_mode_ = JOINT;
+        running_time_ = 0.0;
+        q_start_ = joint_state_.q;
+        q_goal_ = joint_state_.q;
+        spline_period_ = 1.0;
+        ROS_WARN_STREAM("Switching to JOINT mode");
+      }
 
       //////////////////////////////
       // INIT MODE
@@ -296,7 +322,7 @@ namespace tum_ics_ur_robot_lli
       }
 
       //////////////////////////////
-      // FIXME: CARTESIAN MODE
+      // TODO: CARTESIAN MODE
       //////////////////////////////
       else if(control_mode_ == CARTESIAN)
       {
@@ -304,21 +330,42 @@ namespace tum_ics_ur_robot_lli
         Vector6d tau;
         tau.setZero();
 
-        // poly spline
-        Vector6d x_start, x_goal;
-        VVector6d vQd;
-        x_start.head(3) = ee_start_.linear();
-        x_goal.head(3) = ee_goal_.linear();
-        vQd = getJointPVT5(x_start, x_goal, running_time_, spline_period_);
-        Quaterniond Q = Quaterniond::Identity();
+        // get the desired cartesian state
+        cc::CartesianState x_desired;
+        x_desired = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
+        Quaterniond Q = Eigen::Quaterniond(1, 0, 0, 0);
 
-        std::cout << "vQd[0]: " << vQd[0].transpose() << std::endl;
-        std::cout << "vQd[1]: " << vQd[1].transpose() << std::endl;
-        std::cout << "vQd[2]: " << vQd[2].transpose() << std::endl;
+        // get model
+        auto X_ee = model_.T_ef_0(state.q);
+        auto Jef = model_.J_ef_0(state.q);
+        auto Jef_dot = model_.Jp_ef_0(state.q, state.qp);
 
-        x_state_des_.pos() << vQd[0].head(3), Q.coeffs();
+        // current cartesian state
+        cc::CartesianState x_current;
+        x_current.pos().linear() = X_ee.translation();
+        x_current.pos().angular() = X_ee.rotation();
+        x_current.vel() = Jef * state.qp;  // 6x1
 
-        tau = cartesianSpaceControl(state, x_state_des_, dt);
+        // X reference
+        cc::CartesianState Xr;
+        // TODO: check the P gains
+        Xr.vel().linear() = x_desired.vel().linear() - Kp_.topLeftCorner(3, 3) * (x_current.vel().linear() - x_desired.vel().linear());
+        Xr.acc().linear() = x_desired.acc().linear() - Kp_.topLeftCorner(3, 3) * (x_current.acc().linear() - x_desired.acc().linear());
+
+        // Jacobian pesudo inverse
+        auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
+
+        // Q reference
+        Vector6d Qrp, Qrpp;
+        Qrp = Jef_pinv * Xr.vel();
+        Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * Qrp);
+
+        Vector6d Sq = state.qp - Qrp;
+        const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
+        theta_ -= gamma_ * Yr.transpose() * Sq * dt;
+        Vector6d Yr_theta = Yr * theta_;
+        tau = -Kd_ * Sq + Yr_theta ;
+
         return tau;
       }
       else
@@ -329,59 +376,57 @@ namespace tum_ics_ur_robot_lli
 
     }
 
-    Vector6d ImpedanceControl::cartesianSpaceControl(
-      const JointState &cur, const cc::CartesianState &des, double dt)
-    {
-      auto T_ef_0 = model_.T_ef_0(cur.q);
-      auto J_ef_0 = model_.J_ef_0(cur.q);
-      auto Jp_ef_0 = model_.Jp_ef_0(cur.q, cur.qp);
+    cc::CartesianState ImpedanceControl::genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period) {
+        cc::CartesianState X;
 
-      // current cartesian state
-      x_state_cur_.pos().linear() = T_ef_0.translation();
-      x_state_cur_.pos().angular() = T_ef_0.rotation();
-      x_state_cur_.vel() = J_ef_0*cur.qp;
+        double t = running_time;
+        double tf = spline_period;  
+        double t0 = 0.0;
 
-      // control errors
-      cc::CartesianVector X_delta;
-      X_delta.linear() = x_state_cur_.pos().linear() -  x_state_des_.pos().linear();
-      Eigen::AngleAxisd aa(x_state_cur_.pos().angular()*des.pos().angular().inverse());
-      X_delta.angular() = aa.angle()*aa.axis();
+        if (t <= tf) {
+            Eigen::MatrixXd T(6, 6);
+            T << 1, t0, pow(t0, 2), pow(t0, 3), pow(t0, 4), pow(t0, 5),
+                 1, tf, pow(tf, 2), pow(tf, 3), pow(tf, 4), pow(tf, 5),
+                 0, 1,  2*t0, 3*pow(t0, 2), 4*pow(t0, 3), 5*pow(t0, 4),
+                 0, 1,  2*tf, 3*pow(tf, 2), 4*pow(tf, 3), 5*pow(tf, 4),
+                 0, 0,  2, 6*t0, 12*pow(t0, 2), 20*pow(t0, 3),
+                 0, 0,  2, 6*tf, 12*pow(tf, 2), 20*pow(tf, 3);
 
-      // ROS_INFO_STREAM_THROTTLE(1.0, "setting X_delta to: " << X_delta.transpose());
+            Eigen::MatrixXd X_matrix(6, 3);
+            X_matrix.row(0) = X_start.pos().transpose();
+            X_matrix.row(1) = X_goal.pos().transpose();
+            X_matrix.row(2) = X_start.vel().transpose();
+            X_matrix.row(3) = X_goal.vel().transpose();
+            X_matrix.row(4) = X_start.acc().transpose();
+            X_matrix.row(5) = X_goal.acc().transpose();
 
-      cc::CartesianVector Xp_delta;
-      Xp_delta = x_state_cur_.vel() - x_state_des_.vel();
+            Eigen::Vector3d pos;
+            Eigen::Vector3d vel;
+            Eigen::Vector3d acc;
 
-      // references
-      x_state_ref_.vel() = des.vel() - Kp_cart_*X_delta;
-      x_state_ref_.acc() = des.acc() - Kp_cart_*Xp_delta;
+            for (int i = 0; i < 3; ++i) {
+                Eigen::VectorXd a = T.colPivHouseholderQr().solve(X_matrix.col(i));
+                double pos = a(0) + a(1)*t + a(2)*pow(t, 2) + a(3)*pow(t, 3) + a(4)*pow(t, 4) + a(5)*pow(t, 5);
+                double vel = a(1) + 2*a(2)*t + 3*a(3)*pow(t, 2) + 4*a(4)*pow(t, 3) + 5*a(5)*pow(t, 4);
+                double acc = 2*a(2) + 6*a(3)*t + 12*a(4)*pow(t, 2) + 20*a(5)*pow(t, 3);
 
-      // conversion back to jointspace
-      auto J_ef_0_pinv = computeDampenedJacobianInverse(J_ef_0);      
-      q_state_ref_.qp = J_ef_0_pinv*x_state_ref_.vel();
-      q_state_ref_.qpp = J_ef_0_pinv*(x_state_ref_.acc() - Jp_ef_0*cur.qp);
+                X.pos().linear()(i) = pos;
+                X.vel().linear()(i) = vel;
+                X.acc().linear()(i) = acc;
+            }
+        } else {
+            X = X_goal;
+        }
 
-      // control action
-      Vector6d S_q = cur.qp - q_state_ref_.qp;
-      return -Kd_ * S_q + computeYrTh(S_q, cur, q_state_ref_, dt);
-    }
-
-    Vector6d ImpedanceControl::computeYrTh(const Vector6d &S_q, const JointState &cur, const JointState &ref, double dt)
-    {
-      const auto& Yr = model_.regressor(cur.q, cur.qp, ref.q, ref.qp);
-      theta_ -= gamma_ * Yr.transpose() * S_q * dt;
-      return Yr * theta_;
-    }
-
-    Matrix6d ImpedanceControl::computeDampenedJacobianInverse(const cc::Jacobian& J, double lambda) 
-    {
-      return J.transpose() * (J * J.transpose() + lambda * cc::Jacobian::Identity()).inverse();
+        X.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
+        X.vel().angular() = Eigen::Vector3d::Zero();
+        X.acc().angular() = Eigen::Vector3d::Zero();
+        return X;
     }
 
     bool ImpedanceControl::stop()
     {
       return true;
     }
-
   } // namespace RobotControllers
 } // namespace tum_ics_ur_robot_lli
