@@ -17,7 +17,8 @@ namespace tum_ics_ur_robot_lli
       init_period_(100.0),
       delta_q_(Vector6d::Zero()),
       delta_qp_(Vector6d::Zero()),
-      nh_(nh)
+      nh_(nh),
+      model_("ur10_model")
     {
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
 
@@ -50,14 +51,23 @@ namespace tum_ics_ur_robot_lli
         ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
         control_mode_ = CARTESIAN;
         running_time_ = 0.0;
-        ee_start_ = model_.T_ef_0(joint_state_.q);
+
+        // get the current joint state
+        auto T_ef_0 = model_.T_ef_0(joint_state_.q);
+        std::cout << "T_ef_0: " << T_ef_0.translation().transpose() << std::endl;
+        ee_start_.linear() = T_ef_0.translation();
+        ee_start_.angular() = T_ef_0.rotation();
+
+        // set the goal
         ee_goal_.linear() << req.x, req.y, req.z;
         // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
         ee_goal_.angular() = Eigen::Quaterniond(1, 0, 0, 0);
         
         double dist = (ee_goal_.linear() - ee_start_.linear()).norm();
-        spline_period_ = dist * 3;
+        spline_period_ = 10;
 
+        std::cout << "ee_start_: " << ee_start_.linear().transpose() << std::endl;
+        std::cout << "ee_goal_: " << ee_goal_.linear().transpose() << std::endl;
         std::cout << "spline_period_: " << spline_period_ << std::endl;
         return true;
     }
@@ -151,6 +161,15 @@ namespace tum_ics_ur_robot_lli
       {
         init_q_goal_(i) = vec[i];
       }
+
+      // FIXME: init model
+      if (!model_.initRequest(nh_)) 
+      {
+        ROS_ERROR_STREAM("ERORR: initializing model failed!");
+        m_error = true;
+        return false;  
+      }
+      theta_ = model_.parameterInitalGuess();
       
       // init time
       ros::param::get(ns + "/init_period", init_period_);
@@ -196,8 +215,15 @@ namespace tum_ics_ur_robot_lli
       time_prev_ = time_cur;
       running_time_ += dt;
       joint_state_ = state;
-      ROS_WARN_STREAM_THROTTLE(10, "Running Time [s]: " << time.tD());
+      auto T_ef_0 = model_.T_ef_0(state.q);
+      auto T_B_0 = model_.T_B_0();
 
+
+      // std::cout << "T_ef_0: " << T_B_0.toString() << std::endl;
+      // ee_pose_.pos().linear() = T_ef_0.translation();  
+      // ee_pose_.pos().angular() = T_ef_0.rotation();
+      // ROS_WARN_STREAM_THROTTLE(1, "Current EE pose: " << ee_pose_.pos().linear().transpose());
+      // ROS_WARN_STREAM_THROTTLE(10, "Running Time [s]: " << time.tD());
 
       //////////////////////////////
       // CONTROL MODE
@@ -253,7 +279,7 @@ namespace tum_ics_ur_robot_lli
         // poly spline
         VVector6d vQd;
         vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
-        // erros
+
         delta_q_ = state.q - vQd[0];
         delta_qp_ = state.qp - vQd[1];
 
@@ -270,7 +296,7 @@ namespace tum_ics_ur_robot_lli
       }
 
       //////////////////////////////
-      // CARTESIAN MODE
+      // FIXME: CARTESIAN MODE
       //////////////////////////////
       else if(control_mode_ == CARTESIAN)
       {
@@ -279,28 +305,20 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // poly spline
+        Vector6d x_start, x_goal;
         VVector6d vQd;
-        vQd = getJointPVT5(ee_start_.head(3), ee_goal_.head(3), running_time_, spline_period_);
+        x_start.head(3) = ee_start_.linear();
+        x_goal.head(3) = ee_goal_.linear();
+        vQd = getJointPVT5(x_start, x_goal, running_time_, spline_period_);
+        Quaterniond Q = Quaterniond::Identity();
 
-        // FIXME: Finish the cartesian control
         std::cout << "vQd[0]: " << vQd[0].transpose() << std::endl;
         std::cout << "vQd[1]: " << vQd[1].transpose() << std::endl;
         std::cout << "vQd[2]: " << vQd[2].transpose() << std::endl;
 
+        x_state_des_.pos() << vQd[0].head(3), Q.coeffs();
 
-        // erros
-        delta_q_ = state.q - vQd[0];
-        delta_qp_ = state.qp - vQd[1];
-
-        // reference
-        JointState js_r;
-        js_r = state;
-        js_r.qp = vQd[1] - Kp_ * delta_q_;
-        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
-
-        // torque
-        Vector6d Sq = state.qp - js_r.qp;
-        tau = -Kd_ * Sq;
+        tau = cartesianSpaceControl(state, x_state_des_, dt);
         return tau;
       }
       else
@@ -309,6 +327,55 @@ namespace tum_ics_ur_robot_lli
         return Vector6d::Zero();
       }
 
+    }
+
+    Vector6d ImpedanceControl::cartesianSpaceControl(
+      const JointState &cur, const cc::CartesianState &des, double dt)
+    {
+      auto T_ef_0 = model_.T_ef_0(cur.q);
+      auto J_ef_0 = model_.J_ef_0(cur.q);
+      auto Jp_ef_0 = model_.Jp_ef_0(cur.q, cur.qp);
+
+      // current cartesian state
+      x_state_cur_.pos().linear() = T_ef_0.translation();
+      x_state_cur_.pos().angular() = T_ef_0.rotation();
+      x_state_cur_.vel() = J_ef_0*cur.qp;
+
+      // control errors
+      cc::CartesianVector X_delta;
+      X_delta.linear() = x_state_cur_.pos().linear() -  x_state_des_.pos().linear();
+      Eigen::AngleAxisd aa(x_state_cur_.pos().angular()*des.pos().angular().inverse());
+      X_delta.angular() = aa.angle()*aa.axis();
+
+      // ROS_INFO_STREAM_THROTTLE(1.0, "setting X_delta to: " << X_delta.transpose());
+
+      cc::CartesianVector Xp_delta;
+      Xp_delta = x_state_cur_.vel() - x_state_des_.vel();
+
+      // references
+      x_state_ref_.vel() = des.vel() - Kp_cart_*X_delta;
+      x_state_ref_.acc() = des.acc() - Kp_cart_*Xp_delta;
+
+      // conversion back to jointspace
+      auto J_ef_0_pinv = computeDampenedJacobianInverse(J_ef_0);      
+      q_state_ref_.qp = J_ef_0_pinv*x_state_ref_.vel();
+      q_state_ref_.qpp = J_ef_0_pinv*(x_state_ref_.acc() - Jp_ef_0*cur.qp);
+
+      // control action
+      Vector6d S_q = cur.qp - q_state_ref_.qp;
+      return -Kd_ * S_q + computeYrTh(S_q, cur, q_state_ref_, dt);
+    }
+
+    Vector6d ImpedanceControl::computeYrTh(const Vector6d &S_q, const JointState &cur, const JointState &ref, double dt)
+    {
+      const auto& Yr = model_.regressor(cur.q, cur.qp, ref.q, ref.qp);
+      theta_ -= gamma_ * Yr.transpose() * S_q * dt;
+      return Yr * theta_;
+    }
+
+    Matrix6d ImpedanceControl::computeDampenedJacobianInverse(const cc::Jacobian& J, double lambda) 
+    {
+      return J.transpose() * (J * J.transpose() + lambda * cc::Jacobian::Identity()).inverse();
     }
 
     bool ImpedanceControl::stop()

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(blue_controller)
 
+cmake_policy(SET CMP0048 NEW)
+
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ## Find catkin macros and libraries

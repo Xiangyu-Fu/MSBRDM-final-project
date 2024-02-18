@@ -32,6 +32,10 @@ roslaunch impedance_controller impedance_controller.launch
 ### RosService
 Move the arm to a specific joint position:
 ```bash
-rosservice call /move_arm_joint "{joint0: 0.0, joint1: -1.0, joint2: -1.0, 
-joint3: -1.0, joint4: 1.0, joint5: 0.0}"
+rosservice call /move_arm_joint "{joint0: 0.0, joint1: -1.0, joint2: -1.0, joint3: -1.0, joint4: 1.0, joint5: 0.0}"
+```
+
+Move the arm to a specific pose [ON PROGRESS]:
+```bash
+rosservice call /move_arm_cartesian "{x: 0.5, y: -0.2, z: 1.0, rx: 0.0, ry: 0.0, rz: 0.0}"
 ```

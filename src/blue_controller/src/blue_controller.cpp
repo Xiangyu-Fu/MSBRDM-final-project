@@ -322,6 +322,9 @@ namespace tum_ics_ur_robot_lli
       }
       state_ = next_state;
 
+      auto T_ef_0 = model_.T_ef_0(state.q);
+      std::cout << "T_ef_0: " << T_ef_0.toString() << std::endl;
+
       // execute state
       if (state_ == JOINT)
       {

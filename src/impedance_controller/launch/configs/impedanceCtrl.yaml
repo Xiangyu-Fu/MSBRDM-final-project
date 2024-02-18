@@ -13,4 +13,25 @@ simple_effort_ctrl:
  
  # time
  init_period: 5.0
+
+  # adaptive controller
+ learning_rate: 0.1 #0.001
+
+ # parametrization of splines in trajectory generators
+ spline_duration: 5.0 # WITH HARDWARE SET TO 25.0
+ spline_speed: 0.18 # (m/s))
+ speed_degration: 0.97
+ spline_type: 2
+ respline_thres: 0.75
+
+ # safety zone + home position
+ zone_dim: 1.2 # WITH HARDWARE SET TO 0.85
+ home: [0.0, 0.75, 0.99]
+
+ # desired orientation during ball tracking
+ roll_d: M_PI/2 
+ pitch_d: 0
+ yaw_d: M_PI/2
  
+# for impedance control 
+ springK: [8.142, 0.001, 0.001, 0.001, 0.001, 0.001] 

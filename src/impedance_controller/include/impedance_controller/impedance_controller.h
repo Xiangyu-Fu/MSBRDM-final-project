@@ -59,6 +59,8 @@ namespace tum_ics_ur_robot_lli
       // FIXME: params for cartesian control
       ur::URModel model_; 
       cc::CartesianPosition ee_start_, ee_goal_;
+      cc::CartesianState ee_pose_, x_state_des_;
+      VectorXd theta_; 
       
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
@@ -83,6 +85,12 @@ namespace tum_ics_ur_robot_lli
       bool start();
 
       Vector6d update(const RobotTime &time, const JointState &state);
+
+      Vector6d cartesianSpaceControl(const JointState &cur, const cc::CartesianState &des, double dt);
+
+      Vector6d computeYrTh(const Vector6d &S_q, const JointState &cur, const JointState &ref, double dt);
+
+      Matrix6d computeDampenedJacobianInverse(const cc::Jacobian& J, double lambda);
 
       bool stop();
     };
