@@ -30,6 +30,7 @@ roslaunch impedance_controller impedance_controller.launch
 ```
 
 ### Test the Impedance Controller
+Now you can only test the joint control:
 ```bash
 rosrun knob_controller knob_control.py
 ```
