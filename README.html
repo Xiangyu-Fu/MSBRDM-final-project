@@ -148,25 +148,26 @@ sudo dpkg -i ros*
 <blockquote>
 <p>Note: If you face any issues with the build, please first see the <a href="https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35">Issue #35</a>.</p>
 </blockquote>
-<h2 id="run-the-test-environment">Run the Test Environment</h2>
-<p>Please follow the following commands:</p>
-<pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
-roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
-</code></pre>
 <h2 id="impedance-controller">Impedance Controller</h2>
 <h3 id="run-the-impedance-controller">Run the Impedance Controller</h3>
-<pre><code class="language-bash">roslaunch impedance_controller impedance_controller.launch
+<pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
+roslaunch impedance_controller impedance_controller.launch
 </code></pre>
 <h3 id="test-the-impedance-controller">Test the Impedance Controller</h3>
 <p>Now you can only test the joint control:</p>
 <pre><code class="language-bash">rosrun knob_controller knob_control.py
 </code></pre>
-<h3 id="rosservice">RosService</h3>
+<h3 id="ros-service">Ros Service</h3>
 <p>Move the arm to a specific joint position:</p>
 <pre><code class="language-bash">rosservice call /move_arm_joint <span class="hljs-string">&quot;{joint0: 0.0, joint1: -1.0, joint2: -1.0, joint3: -1.0, joint4: 1.0, joint5: 0.0}&quot;</span>
 </code></pre>
 <p>Move the arm to a specific pose [ON PROGRESS]:</p>
 <pre><code class="language-bash">rosservice call /move_arm_cartesian <span class="hljs-string">&quot;{x: 0.5, y: -0.2, z: 0.7, rx: 0.0, ry: 0.0, rz: 0.0}&quot;</span>
+</code></pre>
+<h2 id="run-the-test-environment">Run the Test Environment</h2>
+<p>Please follow the following commands:</p>
+<pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
+roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 </code></pre>
 
             
