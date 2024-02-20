@@ -522,6 +522,8 @@ namespace ur
   {
     std::string ns = Base::name() + '/';
 
+    std::cout << "name: " << Base::name() << std::endl;
+
     cc::load(ns+"L1", L1);
     cc::load(ns+"L2", L2);
     cc::load(ns+"L3", L3);
@@ -534,6 +536,14 @@ namespace ur
     L10 = 0.0;
     L11 = 0.0;
     L12 = 0.0;
+
+    // FIXME: load from parameter server error
+    L1=0.118; 
+    L2=-0.6121;
+    L3=-0.5716;
+    L4=0.1639;
+    L5=0.1157;
+    L6=0.0922;
 
     m1 = 0.0;
     m2 = 0.0;

@@ -217,6 +217,8 @@ namespace tum_ics_ur_robot_lli
       {
         q_start_ = state.q;
         ROS_WARN_STREAM("START [DEG]: \n" << q_start_.transpose());
+        ROS_WARN_STREAM("START [CART]: \n" << model_.T_ef_0(state.q).toString());
+
         // Init time
         time_prev_ = ros::Time::now();
 
@@ -242,13 +244,13 @@ namespace tum_ics_ur_robot_lli
       ROS_INFO_STREAM_THROTTLE(1, "ImpedanceControl::update: Running time: " << X_ee.translation().transpose());
 
       //////////////////////////////
-      // CONTROL MODE
+      // CONTROL MODE SWITCH
       //////////////////////////////
       if(time.tD() > init_period_ && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
           q_start_ = state.q;
-          q_goal_ = state.q;
+          q_goal_ = init_q_goal_;
           running_time_ = 0.0;
           ROS_WARN_STREAM("Switching to JOINT mode");
         }
@@ -376,6 +378,7 @@ namespace tum_ics_ur_robot_lli
 
     }
 
+    // TODO: add orientation spline
     cc::CartesianState ImpedanceControl::genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period) {
         cc::CartesianState X;
 
