@@ -537,14 +537,6 @@ namespace ur
     L11 = 0.0;
     L12 = 0.0;
 
-    // FIXME: load from parameter server error
-    L1=0.118; 
-    L2=-0.6121;
-    L3=-0.5716;
-    L4=0.1639;
-    L5=0.1157;
-    L6=0.0922;
-
     m1 = 0.0;
     m2 = 0.0;
     m3 = 0.0;
@@ -598,6 +590,8 @@ namespace ur
     cc::load(ns+"gy", gy);
     cc::load(ns+"gz", gz);
     g_b_ << gx, gy, gz;
+
+    std::cout << "g_b_: " << g_b_ << std::endl;
 
     cc::load(ns+"robot_0_frame", robot_0_frame_);
     cc::load(ns+"base_frame", base_frame_);

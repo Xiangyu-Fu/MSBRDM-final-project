@@ -17,6 +17,7 @@ namespace tum_ics_ur_robot_lli
       init_period_(100.0),
       delta_q_(Vector6d::Zero()),
       delta_qp_(Vector6d::Zero()),
+      ns_("~impedance_ctrl"),
       nh_(nh),
       model_("ur10_model")
     {
@@ -70,7 +71,7 @@ namespace tum_ics_ur_robot_lli
       ee_goal_.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      spline_period_ = 100 * dist;
+      spline_period_ = 30 * dist;
 
       std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
       std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
@@ -124,16 +125,16 @@ namespace tum_ics_ur_robot_lli
       std::vector<double> vec;
 
       // check namespace
-      std::string ns = "~simple_effort_ctrl";
-      if (!ros::param::has(ns))
+      // std::string ns_ = "~simple_effort_ctrl";
+      if (!ros::param::has(ns_))
       {
-        ROS_ERROR_STREAM("ImpedanceControl init(): Control gains not defined in:" << ns);
+        ROS_ERROR_STREAM("ImpedanceControl init(): Control gains not defined in:" << ns_);
         m_error = true;
         return false;
       }
 
       // D GAINS
-      ros::param::get(ns + "/gains_d", vec);
+      ros::param::get(ns_ + "/gains_d", vec);
       if (vec.size() < STD_DOF)
       {
         ROS_ERROR_STREAM("gains_d: wrong number of dimensions:" << vec.size());
@@ -147,7 +148,7 @@ namespace tum_ics_ur_robot_lli
       ROS_WARN_STREAM("Kd: \n" << Kd_);
 
       // P GAINS
-      ros::param::get(ns + "/gains_p", vec);
+      ros::param::get(ns_ + "/gains_p", vec);
       if (vec.size() < STD_DOF)
       {
         ROS_ERROR_STREAM("gains_p: wrong number of dimensions:" << vec.size());
@@ -161,10 +162,10 @@ namespace tum_ics_ur_robot_lli
       ROS_WARN_STREAM("Kp: \n" << Kp_);
 
       // init joint position
-      ros::param::get(ns + "/init_q", vec);
+      ros::param::get(ns_ + "/init_q", vec);
       if (vec.size() < STD_DOF)
       {
-        ROS_ERROR_STREAM("gains_p: wrong number of dimensions:" << vec.size());
+        ROS_ERROR_STREAM("gains_q: wrong number of dimensions:" << vec.size());
         m_error = true;
         return false;
       }
@@ -182,20 +183,59 @@ namespace tum_ics_ur_robot_lli
       }
       theta_ = model_.parameterInitalGuess();
 
-      ros::param::get(ns + "/learning_rate", gamma_);
+      ros::param::get(ns_ + "/learning_rate", gamma_);
       if (!(gamma_ > 0))
       {
         ROS_ERROR_STREAM("gamma_: is negative:" << gamma_);
         gamma_ = 0.1;
       }
       ROS_WARN_STREAM("gamma_: " << gamma_);
+
+      // p gains for cartesian control
+      ros::param::get(ns_ + "/gains_p_cart", vec);
+      if (vec.size() < 3)
+      {
+        ROS_ERROR_STREAM("gains_p_cart: wrong number of dimensions:" << vec.size());
+        m_error = true;
+        return false;
+      }
+      for (int i = 0; i < STD_DOF; i++)
+      {
+        Kp_cart_(i, i) = vec[i];
+      }
+
+      // d gains for cartesian control
+      ros::param::get(ns_ + "/gains_d_cart", vec);
+      if (vec.size() < 3)
+      {
+        ROS_ERROR_STREAM("gains_d_cart: wrong number of dimensions:" << vec.size());
+        m_error = true;
+        return false;
+      }
+      for (int i = 0; i < STD_DOF; i++)
+      {
+        Kd_cart_(i, i) = vec[i];
+      }
+
+      // i gains for cartesian control
+      ros::param::get(ns_ + "/gains_i_cart", vec);
+      if (vec.size() < 3)
+      {
+        ROS_ERROR_STREAM("gains_i_cart: wrong number of dimensions:" << vec.size());
+        m_error = true;
+        return false;
+      }
+      for (int i = 0; i < STD_DOF; i++)
+      {
+        Ki_cart_(i, i) = vec[i];
+      }
       
       // init time
-      ros::param::get(ns + "/init_period", init_period_);
+      ros::param::get(ns_ + "/init_period", init_period_);
       if (!(init_period_ > 0))
       {
         ROS_ERROR_STREAM("init_period_: is negative:" << init_period_);
-        init_period_ = 100.0;
+        init_period_ = 10.0;
       }
 
       ROS_WARN_STREAM("Goal [DEG]: \n" << init_q_goal_.transpose());
@@ -241,7 +281,10 @@ namespace tum_ics_ur_robot_lli
       joint_state_ = state;
       auto X_ee = model_.T_ef_0(state.q);
       
-      ROS_INFO_STREAM_THROTTLE(1, "ImpedanceControl::update: Running time: " << X_ee.translation().transpose());
+      if(control_mode_ != CARTESIAN)
+      {
+        ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
+      }
 
       //////////////////////////////
       // CONTROL MODE SWITCH
@@ -275,22 +318,19 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // poly spline
-        VVector6d vQd;
-        vQd = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
-
-        // erros
-        delta_q_ = state.q - vQd[0];
-        delta_qp_ = state.qp - vQd[1];
+        VVector6d q_desired;
+        q_desired = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
 
         // reference
-        JointState js_r;
-        js_r = state;
-        js_r.qp = vQd[1] - Kp_ * delta_q_;
-        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
-
+        JointState q_ref;
+        q_ref = state;
+        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]);
+        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]);
         // torque
-        Vector6d Sq = state.qp - js_r.qp;
-        tau = -Kd_ * Sq;
+        Vector6d Sq = state.qp - q_ref.qp;
+        const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        theta_ -= gamma_ * Yr.transpose() * Sq * dt;
+        tau = -Kd_ * Sq + Yr * theta_;
         return tau;
       }
 
@@ -304,22 +344,21 @@ namespace tum_ics_ur_robot_lli
         // control torque
         Vector6d tau;
         tau.setZero();
-        // poly spline
-        VVector6d vQd;
-        vQd = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
 
-        delta_q_ = state.q - vQd[0];
-        delta_qp_ = state.qp - vQd[1];
+        // poly spline
+        VVector6d q_desired;
+        q_desired = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
 
         // reference
-        JointState js_r;
-        js_r = state;
-        js_r.qp = vQd[1] - Kp_ * delta_q_;
-        js_r.qpp = vQd[2] - Kp_ * delta_qp_;
-
+        JointState q_ref;
+        q_ref = state;
+        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]);
+        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]);
         // torque
-        Vector6d Sq = state.qp - js_r.qp;
-        tau = -Kd_ * Sq;
+        Vector6d Sq = state.qp - q_ref.qp;
+        //const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        // theta_ -= gamma_ * Yr.transpose() * Sq * dt;
+        tau = -Kd_ * Sq;// + Yr * theta_;
         return tau;
       }
 
@@ -348,11 +387,24 @@ namespace tum_ics_ur_robot_lli
         x_current.pos().angular() = X_ee.rotation();
         x_current.vel() = Jef * state.qp;  // 6x1
 
+        auto x_diff = x_desired.pos().linear() - x_current.pos().linear();
+        ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
+        // ROS_INFO_STREAM_THROTTLE(0.2, " x_desired: " << x_desired.pos().linear().transpose());
+        // ROS_INFO_STREAM_THROTTLE(0.2, " x_diff:    " << x_diff.transpose());
+        // ROS_INFO_STREAM_THROTTLE(0.2, "---");
+
         // X reference
         cc::CartesianState Xr;
-        // TODO: check the P gains
-        Xr.vel().linear() = x_desired.vel().linear() - Kp_.topLeftCorner(3, 3) * (x_current.vel().linear() - x_desired.vel().linear());
-        Xr.acc().linear() = x_desired.acc().linear() - Kp_.topLeftCorner(3, 3) * (x_current.acc().linear() - x_desired.acc().linear());
+        Xr.vel().linear() = x_desired.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired.pos().linear());
+        Xr.acc().linear() = x_desired.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired.vel().linear());
+        // std::cout << "desired pos:       " << x_desired.pos().linear().transpose() << std::endl;
+        // std::cout << "current pos:       " << x_current.pos().linear().transpose() << std::endl;
+        // std::cout << "desired vel:       " << x_desired.vel().linear().transpose() << std::endl;
+        // std::cout << "current vel:       " << x_current.vel().linear().transpose() << std::endl;  // check
+        // std::cout << "desired acc:       " << x_desired.acc().linear().transpose() << std::endl;
+        // std::cout << "Xr.vel().linear(): " << Xr.vel().linear().transpose() << std::endl;
+        // std::cout << "Xr.acc().linear(): " << Xr.acc().linear().transpose() << std::endl;
+        // std::cout << "... " << std::endl;
 
         // Jacobian pesudo inverse
         auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
@@ -360,19 +412,17 @@ namespace tum_ics_ur_robot_lli
         // Q reference
         Vector6d Qrp, Qrpp;
         Qrp = Jef_pinv * Xr.vel();
-        Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * Qrp);
+        Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        Vector6d Yr_theta = Yr * theta_;
-        tau = -Kd_ * Sq + Yr_theta ;
-
+        tau = -Kd_cart_ * Sq + Yr * theta_;
         return tau;
       }
       else
       {
-        ROS_ERROR_STREAM("ImpedanceControl::update: Unknown control mode");
+        ROS_ERROR_STREAM(" Unknown control mode");
         return Vector6d::Zero();
       }
 
@@ -421,7 +471,7 @@ namespace tum_ics_ur_robot_lli
             X = X_goal;
         }
 
-        X.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
+        X.pos().angular() = Eigen::Quaterniond(0, 0, 0, 0);
         X.vel().angular() = Eigen::Vector3d::Zero();
         X.acc().angular() = Eigen::Vector3d::Zero();
         return X;

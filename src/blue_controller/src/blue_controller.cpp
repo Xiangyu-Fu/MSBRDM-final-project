@@ -322,8 +322,6 @@ namespace tum_ics_ur_robot_lli
       }
       state_ = next_state;
 
-      auto T_ef_0 = model_.T_ef_0(state.q);
-      std::cout << "T_ef_0: " << T_ef_0.toString() << std::endl;
 
       // execute state
       if (state_ == JOINT)
@@ -595,6 +593,7 @@ namespace tum_ics_ur_robot_lli
     {
       const auto& Yr = model_.regressor(cur.q, cur.qp, ref.q, ref.qp);
       theta_ -= gamma_ * Yr.transpose() * S_q * dt;
+      ROS_INFO_STREAM_THROTTLE(1.0, "theta_ = " << theta_.transpose());
       return Yr * theta_;
     }
 

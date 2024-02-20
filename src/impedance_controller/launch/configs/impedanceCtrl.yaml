@@ -1,19 +1,24 @@
 # Gains for the Proportional-Derivative Joint Space Controller
 # P and D gains for each axis.
-simple_effort_ctrl: 
- #proportional
- gains_p: [50, 612.71801, 612.71801, 150, 40, 5]
- 
- #derivative
- gains_d: [100, 75, 75, 73, 15, 5]
+impedance_ctrl: 
+  #proportional
+  gains_p: [50, 612.71801, 612.71801, 150, 40, 5]
+  gains_p_cart: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 
- # Desired position in deg [J1, J2, J3, J4, J5, J6], e.g. [90, -45, 30, -70, 40, 40]
- # Home: [0, -90, 0, -90, 0, 0] 
- init_q: [0, -70, -120, -90, 90, 0]
- 
- # time
- init_period: 5.0
+  #derivative
+  gains_d: [100, 75, 75, 73, 15, 5]
+  gains_d_cart: [0.2, 0.2, 0.2, 2, 2, 2]
+
+  #integral
+  gains_i: [0,0,0,0,0,0]
+
+  # Desired position in deg [J1, J2, J3, J4, J5, J6], e.g. [90, -45, 30, -70, 40, 40]
+  # Home: [0, -90, 0, -90, 0, 0] 
+  init_q: [0, -70, -120, -90, 90, 0]
+
+  # time
+  init_period: 5.0
 
   # adaptive controller
- learning_rate: 0.1 #0.001
+  learning_rate: 1.5 #0.001
 
