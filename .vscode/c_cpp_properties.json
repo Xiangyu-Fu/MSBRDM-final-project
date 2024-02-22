@@ -1,27 +1,19 @@
 {
-    "configurations": [
-        {
-            "browse": {
-                "databaseFilename": "${default}",
-                "limitSymbolsToIncludedHeaders": false
-            },
-            "includePath": [
-                "/home/fu/workspaces/MSBRDM-final-project/devel/include/**",
-                "/opt/openrobots/include/**",
-                "/opt/ros/noetic/include/**",
-                "/home/fu/workspaces/MSBRDM-final-project/src/blue_controller/include/**",
-                "/home/fu/workspaces/MSBRDM-final-project/src/utilities/control_core/include/**",
-                "/home/fu/workspaces/MSBRDM-final-project/src/tum_ics_lacquey_gripper/tum_ics_lacquey_gripper_driver/include/**",
-                "/home/fu/workspaces/MSBRDM-final-project/src/ur_model/include/**",
-                "/usr/include/**",
-                "${workspaceFolder}/src/impedance_controller/include"
-            ],
-            "name": "ROS",
-            "intelliSenseMode": "gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu11",
-            "cppStandard": "c++14"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "name": "linux-gcc-x64",
+      "intelliSenseMode": "linux-gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "${default}",
+      "cppStandard": "${default}"
+    }
+  ],
+  "version": 4
 }
