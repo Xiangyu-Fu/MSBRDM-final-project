@@ -310,6 +310,7 @@ namespace tum_ics_ur_robot_lli
 
       //////////////////////////////
       // INIT MODE
+      // FIXME: add gravity compensation
       //////////////////////////////
       if(control_mode_ == INIT)
       {
@@ -326,15 +327,15 @@ namespace tum_ics_ur_robot_lli
         q_ref = state;
         q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]);
         q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]);
+
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
+        // Compute regressor for cartesian control
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_ * Sq + Yr * theta_;
         return tau;
       }
-
-      // FIXME: there always a joint error between the goal and the current position
 
       //////////////////////////////
       // JOINT MODE
@@ -387,8 +388,8 @@ namespace tum_ics_ur_robot_lli
         x_current.pos().angular() = X_ee.rotation();
         x_current.vel() = Jef * state.qp;  // 6x1
 
-        auto x_diff = x_desired.pos().linear() - x_current.pos().linear();
-        ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
+        // auto x_diff = x_desired.pos().linear() - x_current.pos().linear();
+        // ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
         // ROS_INFO_STREAM_THROTTLE(0.2, " x_desired: " << x_desired.pos().linear().transpose());
         // ROS_INFO_STREAM_THROTTLE(0.2, " x_diff:    " << x_diff.transpose());
         // ROS_INFO_STREAM_THROTTLE(0.2, "---");
@@ -396,7 +397,9 @@ namespace tum_ics_ur_robot_lli
         // X reference
         cc::CartesianState Xr;
         Xr.vel().linear() = x_desired.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired.pos().linear());
+        Xr.vel().angular() = x_current.vel().angular();
         Xr.acc().linear() = x_desired.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired.vel().linear());
+        Xr.acc().angular() = x_current.acc().angular();
         // std::cout << "desired pos:       " << x_desired.pos().linear().transpose() << std::endl;
         // std::cout << "current pos:       " << x_current.pos().linear().transpose() << std::endl;
         // std::cout << "desired vel:       " << x_desired.vel().linear().transpose() << std::endl;
