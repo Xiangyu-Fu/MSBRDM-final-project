@@ -57,6 +57,7 @@ namespace tum_ics_ur_robot_lli
       // params for joint control
       JointState joint_state_;
       Vector6d joint_error_;
+      Vector6d joint_dot_error_;
 
       // FIXME: params for cartesian control
       std::string ns_;
