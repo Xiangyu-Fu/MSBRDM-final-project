@@ -231,6 +231,19 @@ namespace tum_ics_ur_robot_lli
       {
         Ki_cart_(i, i) = vec[i];
       }
+
+            ros::param::get(ns_ + "/gains_i", vec);
+      if (vec.size() < 3)
+      {
+        ROS_ERROR_STREAM("gains_i_cart: wrong number of dimensions:" << vec.size());
+        m_error = true;
+        return false;
+      }
+      for (int i = 0; i < STD_DOF; i++)
+      {
+        Ki_(i, i) = vec[i];
+      }
+      
       
       // init time
       ros::param::get(ns_ + "/init_period", init_period_);
@@ -325,11 +338,17 @@ namespace tum_ics_ur_robot_lli
         VVector6d q_desired;
         q_desired = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
 
+        // PID control
+        // static Vector6d integral_error = Vector6d::Zero();
+        // static Vector6d dot_integral_error = Vector6d::Zero();
+        joint_error_ += (state.q - q_desired[0]) * dt; 
+        joint_dot_error_ += (state.qp - q_desired[1]) * dt;
+
         // reference
         JointState q_ref;
         q_ref = state;
-        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]);
-        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]);
+        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]) - Ki_ * joint_error_;
+        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]) - Ki_ * joint_dot_error_;
 
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
@@ -337,6 +356,8 @@ namespace tum_ics_ur_robot_lli
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_ * Sq + Yr * theta_;
+        // std::cout << "tau init size: " << tau.rows() << "x" << tau.cols() << std::endl;
+        // ROS_INFO_STREAM_THROTTLE(1, " tau init size: " << tau);
         return tau;
       }
 
@@ -353,16 +374,24 @@ namespace tum_ics_ur_robot_lli
         VVector6d q_desired;
         q_desired = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
 
+        // PID control
+        joint_error_ += (state.q - q_desired[0]) * dt; 
+        joint_dot_error_ += (state.qp - q_desired[1]) * dt;
+
         // reference
         JointState q_ref;
         q_ref = state;
-        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]);
-        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]);
+        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0])- Ki_ * joint_error_;
+        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1])- Ki_ * joint_dot_error_;
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
-        //const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        // const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         // theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        tau = -Kd_ * Sq;// + Yr * theta_;
+        // ROS_INFO_STREAM_THROTTLE(1, " tau theta_: " << theta_);
+        // ROS_INFO_STREAM_THROTTLE(1, " tau Yr: " << Yr);
+        tau = -Kd_ * Sq ;//+ Yr * theta_;
+        // std::cout << "tau joint size: " << tau.rows() << "x" << tau.cols() << std::endl;
+        // ROS_INFO_STREAM_THROTTLE(1, " tau joint size: " << tau);
         return tau;
       }
 
@@ -392,7 +421,8 @@ namespace tum_ics_ur_robot_lli
         x_current.vel() = Jef * state.qp;  // 6x1
 
         // auto x_diff = x_desired.pos().linear() - x_current.pos().linear();
-        // ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
+        ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
+        // ROS_INFO_STREAM_THROTTLE(1, " x_current_angular: " << X_ee.rotation());
         // ROS_INFO_STREAM_THROTTLE(0.2, " x_desired: " << x_desired.pos().linear().transpose());
         // ROS_INFO_STREAM_THROTTLE(0.2, " x_diff:    " << x_diff.transpose());
         // ROS_INFO_STREAM_THROTTLE(0.2, "---");
@@ -424,6 +454,7 @@ namespace tum_ics_ur_robot_lli
         const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
+        // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
       }
       else
