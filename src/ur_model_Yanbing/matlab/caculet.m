@@ -83,19 +83,31 @@ Z3 = T3_0(1:3,1:3) * Z0;
 Z4 = T4_0(1:3,1:3) * Z0;
 Z5 = T5_0(1:3,1:3) * Z0;
 
-
-Jcm1 = simplify([cross(Z0, tcm1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
+J1_0 = simplify([cross(Z0, t1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
                 Z0, [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]']);
-Jcm2 = simplify([cross(Z0, tcm2_0), cross(Z1, tcm2_0-t1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
+J2_0 = simplify([cross(Z0, t2_0), cross(Z1, t2_0-t1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
+                Z0, Z1, [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]']);
+J3_0 = simplify([cross(Z0, t3_0), cross(Z1, t3_0-t1_0), cross(Z2, t3_0-t2_0), [0 0 0]', [0 0 0]', [0 0 0]'; ...
+                Z0, Z1, Z2, [0 0 0]', [0 0 0]', [0 0 0]']);
+J4_0 = simplify([cross(Z0, t4_0), cross(Z1, t4_0-t1_0), cross(Z2, t4_0-t2_0), cross(Z3, t4_0-t3_0), [0 0 0]', [0 0 0]'; ...
+                Z0, Z1, Z2, Z3, [0 0 0]', [0 0 0]']);
+J5_0 = simplify([cross(Z0, t5_0), cross(Z1, t5_0-t1_0), cross(Z2, t5_0-t2_0), cross(Z3, t5_0-t3_0), cross(Z4, t5_0-t4_0), [0 0 0]'; ...
+                Z0, Z1, Z2, Z3, Z4, [0 0 0]']);
+J6_0 = simplify([cross(Z0, t6_0), cross(Z1, t6_0-t1_0), cross(Z2, t6_0-t2_0), cross(Z3, t6_0-t3_0), cross(Z4, t6_0-t4_0), cross(Z5, t6_0-t5_0); ...
+                Z0, Z1, Z2, Z3, Z4, Z5]);
+
+Jcm1_0 = simplify([cross(Z0, tcm1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
+                Z0, [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]']);
+Jcm2_0 = simplify([cross(Z0, tcm2_0), cross(Z1, tcm2_0-t1_0), [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]'; ...
                 Z0, Z1, [0 0 0]', [0 0 0]', [0 0 0]', [0 0 0]']);
 
-Jcm3 = simplify([cross(Z0, tcm3_0), cross(Z1, tcm3_0-t1_0), cross(Z2, tcm3_0-t2_0), [0 0 0]', [0 0 0]', [0 0 0]'; ...
+Jcm3_0 = simplify([cross(Z0, tcm3_0), cross(Z1, tcm3_0-t1_0), cross(Z2, tcm3_0-t2_0), [0 0 0]', [0 0 0]', [0 0 0]'; ...
                 Z0, Z1, Z2, [0 0 0]', [0 0 0]', [0 0 0]']);
-Jcm4 = simplify([cross(Z0, tcm4_0), cross(Z1, tcm4_0-t1_0), cross(Z2, tcm4_0-t2_0), cross(Z3, tcm4_0-t3_0), [0 0 0]', [0 0 0]'; ...
+Jcm4_0 = simplify([cross(Z0, tcm4_0), cross(Z1, tcm4_0-t1_0), cross(Z2, tcm4_0-t2_0), cross(Z3, tcm4_0-t3_0), [0 0 0]', [0 0 0]'; ...
                 Z0, Z1, Z2, Z3, [0 0 0]', [0 0 0]']);
-Jcm5 = simplify([cross(Z0, tcm5_0), cross(Z1, tcm5_0-t1_0), cross(Z2, tcm5_0-t2_0), cross(Z3, tcm5_0-t3_0), cross(Z4, tcm5_0-t4_0), [0 0 0]'; ...
+Jcm5_0 = simplify([cross(Z0, tcm5_0), cross(Z1, tcm5_0-t1_0), cross(Z2, tcm5_0-t2_0), cross(Z3, tcm5_0-t3_0), cross(Z4, tcm5_0-t4_0), [0 0 0]'; ...
                 Z0, Z1, Z2, Z3, Z4, [0 0 0]']);
-Jcm6 = simplify([cross(Z0, tcm6_0), cross(Z1, tcm6_0-t1_0), cross(Z2, tcm6_0-t2_0), cross(Z3, tcm6_0-t3_0), cross(Z4, tcm6_0-t4_0), cross(Z5, tcm6_0-t5_0); ...
+Jcm6_0 = simplify([cross(Z0, tcm6_0), cross(Z1, tcm6_0-t1_0), cross(Z2, tcm6_0-t2_0), cross(Z3, tcm6_0-t3_0), cross(Z4, tcm6_0-t4_0), cross(Z5, tcm6_0-t5_0); ...
                 Z0, Z1, Z2, Z3, Z4, Z5]);
 
 %% M, C, G
@@ -120,13 +132,13 @@ I6 = [I611, I612, I613;
       I613, I623, I633];
 g = [gx, gy, gz];
 
-M = m1*Jcm1(1:3,:)'*Jcm1(1:3,:) + m2*Jcm2(1:3,:)'*Jcm2(1:3,:) + m3*Jcm3(1:3,:)'*Jcm3(1:3,:) + m4*Jcm4(1:3,:)'*Jcm4(1:3,:) + m5*Jcm5(1:3,:)'*Jcm5(1:3,:) + m6*Jcm6(1:3,:)'*Jcm6(1:3,:);
-M = M + Jcm1(4:6,:)'*Tcm1_0(1:3,1:3)*I1*Tcm1_0(1:3,1:3)'*Jcm1(4:6,:);
-M = M + Jcm2(4:6,:)'*Tcm2_0(1:3,1:3)*I2*Tcm2_0(1:3,1:3)'*Jcm2(4:6,:);
-M = M + Jcm3(4:6,:)'*Tcm3_0(1:3,1:3)*I3*Tcm3_0(1:3,1:3)'*Jcm3(4:6,:);
-M = M + Jcm4(4:6,:)'*Tcm4_0(1:3,1:3)*I4*Tcm4_0(1:3,1:3)'*Jcm4(4:6,:);
-M = M + Jcm5(4:6,:)'*Tcm5_0(1:3,1:3)*I5*Tcm5_0(1:3,1:3)'*Jcm5(4:6,:);
-M = M + Jcm6(4:6,:)'*Tcm6_0(1:3,1:3)*I6*Tcm6_0(1:3,1:3)'*Jcm6(4:6,:);
+M = m1*Jcm1_0(1:3,:)'*Jcm1_0(1:3,:) + m2*Jcm2_0(1:3,:)'*Jcm2_0(1:3,:) + m3*Jcm3_0(1:3,:)'*Jcm3_0(1:3,:) + m4*Jcm4_0(1:3,:)'*Jcm4_0(1:3,:) + m5*Jcm5_0(1:3,:)'*Jcm5_0(1:3,:) + m6*Jcm6_0(1:3,:)'*Jcm6_0(1:3,:);
+M = M + Jcm1_0(4:6,:)'*Tcm1_0(1:3,1:3)*I1*Tcm1_0(1:3,1:3)'*Jcm1_0(4:6,:);
+M = M + Jcm2_0(4:6,:)'*Tcm2_0(1:3,1:3)*I2*Tcm2_0(1:3,1:3)'*Jcm2_0(4:6,:);
+M = M + Jcm3_0(4:6,:)'*Tcm3_0(1:3,1:3)*I3*Tcm3_0(1:3,1:3)'*Jcm3_0(4:6,:);
+M = M + Jcm4_0(4:6,:)'*Tcm4_0(1:3,1:3)*I4*Tcm4_0(1:3,1:3)'*Jcm4_0(4:6,:);
+M = M + Jcm5_0(4:6,:)'*Tcm5_0(1:3,1:3)*I5*Tcm5_0(1:3,1:3)'*Jcm5_0(4:6,:);
+M = M + Jcm6_0(4:6,:)'*Tcm6_0(1:3,1:3)*I6*Tcm6_0(1:3,1:3)'*Jcm6_0(4:6,:);
 M = simplify(expand(M));
 
 C = sym(zeros(6, 6));
