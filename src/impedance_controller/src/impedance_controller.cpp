@@ -10,9 +10,13 @@ namespace tum_ics_ur_robot_lli
     ImpedanceControl::ImpedanceControl(double weight, const QString &name, ros::NodeHandle nh) : 
       ControlEffort(name, SPLINE_TYPE, JOINT_SPACE, weight),
       is_first_iter_(true),
+      is_first_iter_cart_(true),
       Kp_(Matrix6d::Zero()),
       Kd_(Matrix6d::Zero()),
       Ki_(Matrix6d::Zero()),
+      Kp_cart_(Matrix6d::Zero()),
+      Kd_cart_(Matrix6d::Zero()),
+      Ki_cart_(Matrix6d::Zero()),
       init_q_goal_(Vector6d::Zero()),
       init_period_(100.0),
       delta_q_(Vector6d::Zero()),
@@ -26,8 +30,6 @@ namespace tum_ics_ur_robot_lli
       // Start two Services
       move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
       move_arm_joint_service_ = nh_.advertiseService("move_arm_joint", &ImpedanceControl::moveArmJoint, this);
-      ROS_INFO_STREAM("ImpedanceControl: Services started");
-
     }
 
     ImpedanceControl::~ImpedanceControl()
@@ -72,12 +74,12 @@ namespace tum_ics_ur_robot_lli
       ee_goal_.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      spline_period_ = 30 * dist;
+      spline_period_ = 0.3;
 
       // std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
       // std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
       // std::cout << "spline_period_: " << spline_period_ << std::endl;
-      ROS_WARN_STREAM("Switching to CARTESIAN mode");
+      // ROS_WARN_STREAM("Switching to CARTESIAN mode");
       return true;
     }
 
@@ -206,6 +208,7 @@ namespace tum_ics_ur_robot_lli
       {
         Kp_cart_(i, i) = vec[i];
       }
+      ROS_WARN_STREAM("Kp_cart_: \n" << Kp_cart_);
 
       // d gains for cartesian control
       ros::param::get(ns_ + "/gains_d_cart", vec);
@@ -292,10 +295,12 @@ namespace tum_ics_ur_robot_lli
         // Init model
         theta_ = model_.parameterInitalGuess();
 
+        // Init error
         joint_error_ = Vector6d::Zero();
         joint_dot_error_ = Vector6d::Zero();
 
-l
+        // init q
+        q_desired_ = getJointPVT5(q_start_, init_q_goal_, running_time_, init_period_);
       }
 
       //////////////////////////////
@@ -312,6 +317,7 @@ l
       if(control_mode_ != CARTESIAN)
       {
         ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
+        // ROS_INFO_STREAM_THROTTLE(1, "Freq: " << 1.0 / dt);
       }
 
       //////////////////////////////
@@ -322,7 +328,7 @@ l
           control_mode_ = JOINT;
           // q_start_ = state.q;
           q_goal_ = init_q_goal_;
-          // running_time_ = 1.0;
+          spline_period_ = init_period_;
           ROS_WARN_STREAM("Switching to JOINT mode");
         }
       
@@ -345,7 +351,6 @@ l
         for(int i = 0; i < 3; i++)
         {
           q_desired_[i] = low_pass_factor_ * q_desired_[i] + (1 - low_pass_factor_) * q_desired_cur[i];
-          std::cout << "q_desired_[i]: " << q_desired_[i] << std::endl;
         }
 
         // PID control
@@ -396,8 +401,9 @@ l
         q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
         q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
         // torque
+        const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq ;
+        tau = -Kd_ * Sq + Yr * theta_;;
         return tau;
       }
 
@@ -415,10 +421,14 @@ l
         x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
 
         // low pass filter
+        if(is_first_iter_cart_)
+        {
+          x_desired_ = x_desired_cur;
+          is_first_iter_cart_ = false;
+        }
         x_desired_.pos() = low_pass_factor_ * x_desired_.pos() + (1 - low_pass_factor_) * x_desired_cur.pos();
         x_desired_.vel() = low_pass_factor_ * x_desired_.vel() + (1 - low_pass_factor_) * x_desired_cur.vel();
         x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
-
 
         // get model
         auto X_ee = model_.T_ef_0(state.q);

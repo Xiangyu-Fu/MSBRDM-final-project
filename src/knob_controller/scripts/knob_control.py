@@ -27,6 +27,21 @@ if __name__ == "__main__":
     
     # # Example call to moveArmCartesian service
     # response_cartesian = move_arm_cartesian_client(0.1, 0.2, 0.3, 0.1, 0.2, 0.3)
+    traget_pos = [0.5, 0.0, 0.5, 0.0, 0.0, 0.0]
+    frequency = 0.05  # Adjust frequency as needed]
+    t = 0
+    while not rospy.is_shutdown():
+        t += 1
+        sinusoidal_offset = 0.1*math.sin(frequency * t)
+        traget_pos[0] = 0.5 + sinusoidal_offset
+        traget_pos[1] = 0.0 + sinusoidal_offset
+        traget_pos[2] = 0.5 + sinusoidal_offset
+        print("traget_pos:", traget_pos)
+        response_cartesian = move_arm_cartesian_client(traget_pos[0], traget_pos[1], traget_pos[2], traget_pos[3], traget_pos[4], traget_pos[5])
+        # print("MoveArmCartesian response:", response_cartesian)
+        rospy.sleep(0.05)
+
+
     # print("MoveArmCartesian response:", response_cartesian)
     
     # Example call to moveArmJoint service with sinusoidal wave added
@@ -44,3 +59,4 @@ if __name__ == "__main__":
         response_joint = move_arm_joint_client(joint0, joint1, joint2, joint3, joint4, joint5)
         print("MoveArmJoint response:", response_joint)
         rospy.sleep(1)  # Adjust sleep time as needed
+

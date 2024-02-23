@@ -62,6 +62,7 @@ namespace tum_ics_ur_robot_lli
       Vector6d joint_dot_error_;
 
       // FIXME: params for cartesian control
+      bool is_first_iter_cart_;
       std::string ns_;
       Matrix6d Kp_cart_;
       Matrix6d Kd_cart_;

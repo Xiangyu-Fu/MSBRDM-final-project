@@ -2,7 +2,7 @@
 # P and D gains for each axis.
 impedance_ctrl: 
   #proportional
-  gains_p: [50, 700, 700, 150, 40, 5]
+  gains_p: [50, 600, 600, 150, 40, 5]
   gains_p_cart: [2, 2, 2, 2, 2, 2]
 
   #derivative
@@ -24,5 +24,5 @@ impedance_ctrl:
   learning_rate: 1.5 #0.001
 
   # low pass filter
-  low_pass_factor: 0.5
+  low_pass_factor: 0.99
 
