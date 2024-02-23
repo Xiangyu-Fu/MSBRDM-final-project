@@ -49,6 +49,7 @@ namespace tum_ics_ur_robot_lli
       Mode control_mode_;
       ros::Time time_prev_;
       double running_time_;
+      double low_pass_factor_;
 
       // params for init procedure
       double init_period_;
@@ -56,6 +57,7 @@ namespace tum_ics_ur_robot_lli
 
       // params for joint control
       JointState joint_state_;
+      VVector6d q_desired_;
       Vector6d joint_error_;
       Vector6d joint_dot_error_;
 
@@ -68,6 +70,7 @@ namespace tum_ics_ur_robot_lli
       ur::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;
+      cc::CartesianState x_desired_;
 
       // params for Regressor
       VectorXd theta_;

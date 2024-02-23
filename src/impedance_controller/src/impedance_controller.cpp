@@ -74,9 +74,10 @@ namespace tum_ics_ur_robot_lli
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
       spline_period_ = 30 * dist;
 
-      std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
-      std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
-      std::cout << "spline_period_: " << spline_period_ << std::endl;
+      // std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
+      // std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
+      // std::cout << "spline_period_: " << spline_period_ << std::endl;
+      ROS_WARN_STREAM("Switching to CARTESIAN mode");
       return true;
     }
 
@@ -232,7 +233,7 @@ namespace tum_ics_ur_robot_lli
         Ki_cart_(i, i) = vec[i];
       }
 
-            ros::param::get(ns_ + "/gains_i", vec);
+      ros::param::get(ns_ + "/gains_i", vec);
       if (vec.size() < 3)
       {
         ROS_ERROR_STREAM("gains_i_cart: wrong number of dimensions:" << vec.size());
@@ -243,7 +244,14 @@ namespace tum_ics_ur_robot_lli
       {
         Ki_(i, i) = vec[i];
       }
-      
+
+      // low pass filter
+      ros::param::get(ns_ + "/low_pass_factor", low_pass_factor_);
+      if (!(low_pass_factor_ > 0))
+      {
+        ROS_ERROR_STREAM("low_pass_factor_: is negative:" << low_pass_factor_);
+        low_pass_factor_ = 0.1;
+      }
       
       // init time
       ros::param::get(ns_ + "/init_period", init_period_);
@@ -272,7 +280,7 @@ namespace tum_ics_ur_robot_lli
       {
         q_start_ = state.q;
         ROS_WARN_STREAM("START [DEG]: \n" << q_start_.transpose());
-        ROS_WARN_STREAM("START [CART]: \n" << model_.T_ef_0(state.q).toString());
+        ROS_WARN_STREAM("START [CART]: \n" << model_.T_ef_0(state.q).linear());
 
         // Init time
         time_prev_ = ros::Time::now();
@@ -287,6 +295,7 @@ namespace tum_ics_ur_robot_lli
         joint_error_ = Vector6d::Zero();
         joint_dot_error_ = Vector6d::Zero();
 
+l
       }
 
       //////////////////////////////
@@ -311,21 +320,12 @@ namespace tum_ics_ur_robot_lli
       if(time.tD() > init_period_ && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
-          q_start_ = state.q;
+          // q_start_ = state.q;
           q_goal_ = init_q_goal_;
-          running_time_ = 0.0;
+          // running_time_ = 1.0;
           ROS_WARN_STREAM("Switching to JOINT mode");
         }
       
-      if(running_time_ > spline_period_ && control_mode_ == CARTESIAN)
-      {
-        control_mode_ = JOINT;
-        running_time_ = 0.0;
-        q_start_ = joint_state_.q;
-        q_goal_ = joint_state_.q;
-        spline_period_ = 1.0;
-        ROS_WARN_STREAM("Switching to JOINT mode");
-      }
 
       //////////////////////////////
       // INIT MODE
@@ -338,20 +338,25 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // poly spline
-        VVector6d q_desired;
-        q_desired = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
+        VVector6d q_desired_cur;
+        q_desired_cur = getJointPVT5(q_start_, init_q_goal_, running_time_, init_period_);
+
+        // low pass filter
+        for(int i = 0; i < 3; i++)
+        {
+          q_desired_[i] = low_pass_factor_ * q_desired_[i] + (1 - low_pass_factor_) * q_desired_cur[i];
+          std::cout << "q_desired_[i]: " << q_desired_[i] << std::endl;
+        }
 
         // PID control
-        // static Vector6d integral_error = Vector6d::Zero();
-        // static Vector6d dot_integral_error = Vector6d::Zero();
-        joint_error_ += (state.q - q_desired[0]) * dt; 
-        joint_dot_error_ += (state.qp - q_desired[1]) * dt;
+        joint_error_ += (state.q - q_desired_[0]) * dt; 
+        joint_dot_error_ += (state.qp - q_desired_[1]) * dt;
 
         // reference
         JointState q_ref;
         q_ref = state;
-        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0]) - Ki_ * joint_error_;
-        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1]) - Ki_ * joint_dot_error_;
+        q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0]) - Ki_ * joint_error_;
+        q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1]) - Ki_ * joint_dot_error_;
 
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
@@ -359,8 +364,6 @@ namespace tum_ics_ur_robot_lli
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_ * Sq + Yr * theta_;
-        // std::cout << "tau init size: " << tau.rows() << "x" << tau.cols() << std::endl;
-        // ROS_INFO_STREAM_THROTTLE(1, " tau init size: " << tau);
         return tau;
       }
 
@@ -374,27 +377,27 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // poly spline
-        VVector6d q_desired;
-        q_desired = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
+        VVector6d q_desired_cur;
+        q_desired_cur = getJointPVT5(q_start_, q_goal_, running_time_, spline_period_);
+
+        // low pass filter
+        for(int i = 0; i < 3; i++)
+        {
+          q_desired_[i] = low_pass_factor_ * q_desired_[i] + (1 - low_pass_factor_) * q_desired_cur[i];
+        }
 
         // PID control
-        joint_error_ += (state.q - q_desired[0]) * dt; 
-        joint_dot_error_ += (state.qp - q_desired[1]) * dt;
+        joint_error_ += (state.q - q_desired_[0]) * dt; 
+        joint_dot_error_ += (state.qp - q_desired_[1]) * dt;
 
         // reference
         JointState q_ref;
         q_ref = state;
-        q_ref.qp = q_desired[1] - Kp_ * (state.q - q_desired[0])- Ki_ * joint_error_;
-        q_ref.qpp = q_desired[2] - Kp_ * (state.qp - q_desired[1])- Ki_ * joint_dot_error_;
+        q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
+        q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
-        // const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
-        // theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        // ROS_INFO_STREAM_THROTTLE(1, " tau theta_: " << theta_);
-        // ROS_INFO_STREAM_THROTTLE(1, " tau Yr: " << Yr);
-        tau = -Kd_ * Sq ;//+ Yr * theta_;
-        // std::cout << "tau joint size: " << tau.rows() << "x" << tau.cols() << std::endl;
-        // ROS_INFO_STREAM_THROTTLE(1, " tau joint size: " << tau);
+        tau = -Kd_ * Sq ;
         return tau;
       }
 
@@ -408,9 +411,14 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // get the desired cartesian state
-        cc::CartesianState x_desired;
-        x_desired = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
-        Quaterniond Q = Eigen::Quaterniond(1, 0, 0, 0);
+        cc::CartesianState x_desired_cur;
+        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
+
+        // low pass filter
+        x_desired_.pos() = low_pass_factor_ * x_desired_.pos() + (1 - low_pass_factor_) * x_desired_cur.pos();
+        x_desired_.vel() = low_pass_factor_ * x_desired_.vel() + (1 - low_pass_factor_) * x_desired_cur.vel();
+        x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
+
 
         // get model
         auto X_ee = model_.T_ef_0(state.q);
@@ -423,27 +431,14 @@ namespace tum_ics_ur_robot_lli
         x_current.pos().angular() = X_ee.rotation();
         x_current.vel() = Jef * state.qp;  // 6x1
 
-        // auto x_diff = x_desired.pos().linear() - x_current.pos().linear();
         ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
-        // ROS_INFO_STREAM_THROTTLE(1, " x_current_angular: " << X_ee.rotation());
-        // ROS_INFO_STREAM_THROTTLE(0.2, " x_desired: " << x_desired.pos().linear().transpose());
-        // ROS_INFO_STREAM_THROTTLE(0.2, " x_diff:    " << x_diff.transpose());
-        // ROS_INFO_STREAM_THROTTLE(0.2, "---");
 
         // X reference
         cc::CartesianState Xr;
-        Xr.vel().linear() = x_desired.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired.pos().linear());
-        Xr.vel().angular() = x_current.vel().angular();
-        Xr.acc().linear() = x_desired.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired.vel().linear());
-        Xr.acc().angular() = x_current.acc().angular();
-        // std::cout << "desired pos:       " << x_desired.pos().linear().transpose() << std::endl;
-        // std::cout << "current pos:       " << x_current.pos().linear().transpose() << std::endl;
-        // std::cout << "desired vel:       " << x_desired.vel().linear().transpose() << std::endl;
-        // std::cout << "current vel:       " << x_current.vel().linear().transpose() << std::endl;  // check
-        // std::cout << "desired acc:       " << x_desired.acc().linear().transpose() << std::endl;
-        // std::cout << "Xr.vel().linear(): " << Xr.vel().linear().transpose() << std::endl;
-        // std::cout << "Xr.acc().linear(): " << Xr.acc().linear().transpose() << std::endl;
-        // std::cout << "... " << std::endl;
+        Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear());
+        Xr.vel().angular() = x_desired_.vel().angular();
+        Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear());
+        Xr.acc().angular() = x_desired_.acc().angular();
 
         // Jacobian pesudo inverse
         auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
