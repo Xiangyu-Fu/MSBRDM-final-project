@@ -63,7 +63,7 @@ namespace tum_ics_ur_robot_lli
       Matrix6d Kp_cart_;
       Matrix6d Kd_cart_;
       Matrix6d Ki_cart_;
-      VVector6d cart_error_;
+      Vector6d cart_error_;
       ur::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;
