@@ -144,38 +144,38 @@ void URModel::caculet_J6_0(cc::Jacobian &J6_0,
         }
     }
 
-    J6_0(0, 0) = L4*(cos(q1)*cos(q5) + cos(q2 + q3 + q4)*sin(q1)*sin(q5)) + L2*cos(q1) + L3*cos(q2)*sin(q1) - L11*sin(q2 + q3 + q4)*sin(q1) + cos(q2)*cos(q3)*sin(q1)*(L5 - L11) - sin(q1)*sin(q2)*sin(q3)*(L5 - L11);
-    J6_0(0, 1) = cos(q1)*(L5*sin(q2 + q3) - L11*sin(q2 + q3) + L3*sin(q2) + L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(0, 2) = cos(q1)*(sin(q2 + q3)*(L5 - L11) + L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(0, 3) = cos(q1)*(L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(0, 4) = L4*cos(q1)*cos(q2)*cos(q5)*sin(q3)*sin(q4) - L4*cos(q1)*cos(q2)*cos(q3)*cos(q4)*cos(q5) - L4*sin(q1)*sin(q5) + L4*cos(q1)*cos(q3)*cos(q5)*sin(q2)*sin(q4) + L4*cos(q1)*cos(q4)*cos(q5)*sin(q2)*sin(q3);
+    J6_0(0, 0) = L4*(cos(q(0))*cos(q(4)) + cos(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4))) + L2*cos(q(0)) + L3*cos(q(1))*sin(q(0)) - L11*sin(q(1) + q(2) + q(3))*sin(q(0)) + cos(q(1))*cos(q(2))*sin(q(0))*(L5 - L11) - sin(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    J6_0(0, 1) = cos(q(0))*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) + L3*sin(q(1)) + L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(0, 2) = cos(q(0))*(sin(q(1) + q(2))*(L5 - L11) + L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(0, 3) = cos(q(0))*(L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(0, 4) = L4*cos(q(0))*cos(q(1))*cos(q(4))*sin(q(2))*sin(q(3)) - L4*cos(q(0))*cos(q(1))*cos(q(2))*cos(q(3))*cos(q(4)) - L4*sin(q(0))*sin(q(4)) + L4*cos(q(0))*cos(q(2))*cos(q(4))*sin(q(1))*sin(q(3)) + L4*cos(q(0))*cos(q(3))*cos(q(4))*sin(q(1))*sin(q(2));
 
-    J6_0(1, 0) = L4*(cos(q5)*sin(q1) - cos(q2 + q3 + q4)*cos(q1)*sin(q5)) + L2*sin(q1) - L3*cos(q1)*cos(q2) + L11*sin(q2 + q3 + q4)*cos(q1) - cos(q1)*cos(q2)*cos(q3)*(L5 - L11) + cos(q1)*sin(q2)*sin(q3)*(L5 - L11);
-    J6_0(1, 1) = sin(q1)*(L5*sin(q2 + q3) - L11*sin(q2 + q3) + L3*sin(q2) + L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(1, 2) = sin(q1)*(sin(q2 + q3)*(L5 - L11) + L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(1, 3) = sin(q1)*(L11*cos(q2 + q3 + q4) + L4*sin(q2 + q3 + q4)*sin(q5));
-    J6_0(1, 4) = L4*cos(q1)*sin(q5) + L4*cos(q2)*cos(q5)*sin(q1)*sin(q3)*sin(q4) + L4*cos(q3)*cos(q5)*sin(q1)*sin(q2)*sin(q4) + L4*cos(q4)*cos(q5)*sin(q1)*sin(q2)*sin(q3) - L4*cos(q2)*cos(q3)*cos(q4)*cos(q5)*sin(q1);
+    J6_0(1, 0) = L4*(cos(q(4))*sin(q(0)) - cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4))) + L2*sin(q(0)) - L3*cos(q(0))*cos(q(1)) + L11*sin(q(1) + q(2) + q(3))*cos(q(0)) - cos(q(0))*cos(q(1))*cos(q(2))*(L5 - L11) + cos(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    J6_0(1, 1) = sin(q(0))*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) + L3*sin(q(1)) + L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(1, 2) = sin(q(0))*(sin(q(1) + q(2))*(L5 - L11) + L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(1, 3) = sin(q(0))*(L11*cos(q(1) + q(2) + q(3)) + L4*sin(q(1) + q(2) + q(3))*sin(q(4)));
+    J6_0(1, 4) = L4*cos(q(0))*sin(q(4)) + L4*cos(q(1))*cos(q(4))*sin(q(0))*sin(q(2))*sin(q(3)) + L4*cos(q(2))*cos(q(4))*sin(q(0))*sin(q(1))*sin(q(3)) + L4*cos(q(3))*cos(q(4))*sin(q(0))*sin(q(1))*sin(q(2)) - L4*cos(q(1))*cos(q(2))*cos(q(3))*cos(q(4))*sin(q(0));
 
-    J6_0(2, 1) = L11*cos(q2 + q3) - L5*cos(q2 + q3) - (L4*sin(q2 + q3 + q4 + q5))/2 - L3*cos(q2) + (L4*sin(q2 + q3 + q4 - q5))/2 + L11*sin(q2 + q3 + q4);
-    J6_0(2, 2) = L11*cos(q2 + q3) - L5*cos(q2 + q3) - (L4*sin(q2 + q3 + q4 + q5))/2 + (L4*sin(q2 + q3 + q4 - q5))/2 + L11*sin(q2 + q3 + q4);
-    J6_0(2, 3) = (L4*sin(q2 + q3 + q4 - q5))/2 - (L4*sin(q2 + q3 + q4 + q5))/2 + L11*sin(q2 + q3 + q4);
-    J6_0(2, 4) = -L4*(sin(q2 + q3 + q4 + q5)/2 + sin(q2 + q3 + q4 - q5)/2)
+    J6_0(2, 1) = L11*cos(q(1) + q(2)) - L5*cos(q(1) + q(2)) - (L4*sin(q(1) + q(2) + q(3) + q(4)))/2 - L3*cos(q(1)) + (L4*sin(q(1) + q(2) + q(3) - q(4)))/2 + L11*sin(q(1) + q(2) + q(3));
+    J6_0(2, 2) = L11*cos(q(1) + q(2)) - L5*cos(q(1) + q(2)) - (L4*sin(q(1) + q(2) + q(3) + q(4)))/2 + (L4*sin(q(1) + q(2) + q(3) - q(4)))/2 + L11*sin(q(1) + q(2) + q(3));
+    J6_0(2, 3) = (L4*sin(q(1) + q(2) + q(3) - q(4)))/2 - (L4*sin(q(1) + q(2) + q(3) + q(4)))/2 + L11*sin(q(1) + q(2) + q(3));
+    J6_0(2, 4) = -L4*(sin(q(1) + q(2) + q(3) + q(4))/2 + sin(q(1) + q(2) + q(3) - q(4))/2)
 
-    J6_0(3, 1) = sin(q1);
-    J6_0(3, 2) = sin(q1);
-    J6_0(3, 3) = sin(q1);
-    J6_0(3, 4) = sin(q2 + q3 + q4)*cos(q1);
-    J6_0(3, 5) = cos(q5)*sin(q1) - cos(q2 + q3 + q4)*cos(q1)*sin(q5);
+    J6_0(3, 1) = sin(q(0));
+    J6_0(3, 2) = sin(q(0));
+    J6_0(3, 3) = sin(q(0));
+    J6_0(3, 4) = sin(q(1) + q(2) + q(3))*cos(q(0));
+    J6_0(3, 5) = cos(q(4))*sin(q(0)) - cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4));
 
-    J6_0(4, 1) = -cos(q1);
-    J6_0(4, 2) = -cos(q1);
-    J6_0(4, 3) = -cos(q1);
-    J6_0(4, 4) = sin(q2 + q3 + q4)*sin(q1);
-    J6_0(4, 5) = - cos(q1)*cos(q5) - cos(q2 + q3 + q4)*sin(q1)*sin(q5);
+    J6_0(4, 1) = -cos(q(0));
+    J6_0(4, 2) = -cos(q(0));
+    J6_0(4, 3) = -cos(q(0));
+    J6_0(4, 4) = sin(q(1) + q(2) + q(3))*sin(q(0));
+    J6_0(4, 5) = - cos(q(0))*cos(q(4)) - cos(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4));
 
     J6_0(5, 0) = 1;
-    J6_0(5, 4) = -cos(q2 + q3 + q4);
-    J6_0(5, 5) = -sin(q2 + q3 + q4)*sin(q5);
+    J6_0(5, 4) = -cos(q(1) + q(2) + q(3));
+    J6_0(5, 5) = -sin(q(1) + q(2) + q(3))*sin(q(4));
 }
 
 
@@ -193,5 +193,177 @@ void URModel::caculet_Jcm1_0(cc::Jacobian &Jcm1_0,
         }
     }
 
-    Jcm1_0(0, 0) = 
+    Jcm1_0(1, 0) = 21/1000;
+    Jcm1_0(5, 0) = 1;
 }
+
+void URModel::caculet_Jcm2_0(cc::Jacobian &Jcm2_0,
+                        const cc::JointPosition &q) const
+{
+    // Initial
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Jcm2_0(i, j) = 0;
+        }
+    }
+
+    Jcm2_0(0, 0) = (79*cos(q(0)))/500 - (19*sin(q(0)))/50;
+    Jcm2_0(1, 0) = (19*cos(q(0)))/50 + (79*sin(q(0)))/500;
+    Jcm2_0(2, 1) = 19/50;
+    Jcm2_0(3, 1) = sin(q(0));
+    Jcm2_0(4, 1) = -cos(q(0));
+    Jcm2_0(5, 0) = 1;
+}
+
+void URModel::caculet_Jcm3_0(cc::Jacobian &Jcm3_0,
+                        const cc::JointPosition &q) const
+{
+    // Initial
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Jcm3_0(i, j) = 0;
+        }
+    }
+
+    Jcm3_0(0, 0) = (17*cos(q(0)))/250 - (6*cos(q(1))*sin(q(0)))/25 + L3*cos(q(1))*sin(q(0));
+    Jcm3_0(0, 1) = cos(q(0))*sin(q(1))*(L3 - 6/25);
+    Jcm3_0(0, 2) = -(6*cos(q(0))*sin(q(1)))/25;
+
+    Jcm3_0(1, 0) = (17*sin(q(0)))/250 + (6*cos(q(0))*cos(q(1)))/25 - L3*cos(q(0))*cos(q(1));
+    Jcm3_0(1, 1) = sin(q(0))*sin(q(1))*(L3 - 6/25);
+    Jcm3_0(1, 2) = -(6*sin(q(0))*sin(q(1)))/25;
+
+    Jcm3_0(2, 1) = -cos(q(1))*(L3 - 6/25);
+    Jcm3_0(2, 2) = (6*cos(q(1)))/25;
+
+    Jcm3_0(3, 1) = sin(q(0));
+    Jcm3_0(3, 2) = sin(q(0));
+
+    Jcm3_0(4, 1) = -cos(q(0));
+    Jcm3_0(4, 2) = -cos(q(0));
+
+    Jcm3_0(5, 0) = 1;
+}
+
+void URModel::caculet_Jcm4_0(cc::Jacobian &Jcm4_0,
+                        const cc::JointPosition &q) const
+{
+    // Initial
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Jcm4_0(i, j) = 0;
+        }
+    }
+
+    Jcm4_0(0, 0) = (9*cos(q(0)))/500 + L3*cos(q(1))*sin(q(0)) + (7*cos(q(1))*sin(q(0))*sin(q(2)))/1000 + (7*cos(q(2))*sin(q(0))*sin(q(1)))/1000 + cos(q(1))*cos(q(2))*sin(q(0))*(L5 - L11) - sin(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm4_0(0, 1) = cos(q(0))*(sin(q(1) + q(2))*(L5 - L11) - (7*cos(q(1) + q(2)))/1000 + L3*sin(q(1)));
+    Jcm4_0(0, 2) = -cos(q(0))*((7*cos(q(1) + q(2)))/1000 - sin(q(1) + q(2))*(L5 - L11));
+    Jcm4_0(0, 3) = -(7*cos(q(1) + q(2))*cos(q(0)))/1000;
+
+    Jcm4_0(1, 0) = (9*sin(q(0)))/500 - L3*cos(q(0))*cos(q(1)) - (7*cos(q(0))*cos(q(1))*sin(q(2)))/1000 - (7*cos(q(0))*cos(q(2))*sin(q(1)))/1000 - cos(q(0))*cos(q(1))*cos(q(2))*(L5 - L11) + cos(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm4_0(1, 1) = sin(q(0))*(sin(q(1) + q(2))*(L5 - L11) - (7*cos(q(1) + q(2)))/1000 + L3*sin(q(1)));
+    Jcm4_0(1, 2) = -sin(q(0))*((7*cos(q(1) + q(2)))/1000 - sin(q(1) + q(2))*(L5 - L11));
+    Jcm4_0(1, 3) = -(7*cos(q(1) + q(2))*sin(q(0)))/1000;
+
+    Jcm4_0(2, 1) = L11*cos(q(1) + q(2)) - L5*cos(q(1) + q(2)) - (7*sin(q(1) + q(2)))/1000 - L3*cos(q(1));
+    Jcm4_0(2, 2) = L11*cos(q(1) + q(2)) - L5*cos(q(1) + q(2)) - (7*sin(q(1) + q(2)))/1000;
+    Jcm4_0(2, 3) = -(7*sin(q(1) + q(2)))/1000;
+
+    Jcm4_0(3, 1) = sin(q(0));
+    Jcm4_0(3, 2) = sin(q(0));
+    Jcm4_0(3, 3) = sin(q(0));
+
+    Jcm4_0(4, 1) = -cos(q(0));
+    Jcm4_0(4, 2) = -cos(q(0));
+    Jcm4_0(4, 3) = -cos(q(0));
+
+    Jcm4_0(5, 0) = 1;
+}
+
+void URModel::caculet_Jcm5_0(cc::Jacobian &Jcm5_0,
+                        const cc::JointPosition &q) const
+{
+    // Initial
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Jcm5_0(i, j) = 0;
+        }
+    }
+
+    Jcm5_0(0, 0) = (7*cos(q(0)))/1000 + L2*cos(q(0)) + L3*cos(q(1))*sin(q(0)) - (9*cos(q(1) + q(2))*sin(q(0))*sin(q(3)))/500 - (9*sin(q(1) + q(2))*cos(q(3))*sin(q(0)))/500 + cos(q(1))*cos(q(2))*sin(q(0))*(L5 - L11) - sin(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm5_0(0, 1) = cos(q(0))*((9*cos(q(1) + q(2) + q(3)))/500 + L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) + L3*sin(q(1)));
+    Jcm5_0(0, 2) = cos(q(0))*((9*cos(q(1) + q(2) + q(3)))/500 + sin(q(1) + q(2))*(L5 - L11));
+    Jcm5_0(0, 3) = (9*cos(q(1) + q(2) + q(3))*cos(q(0)))/500;
+    Jcm5_0(0, 4) = -(7*cos(q(1) + q(2) + q(3))*cos(q(0)))/1000;
+
+    Jcm5_0(1, 0) = (7*sin(q(0)))/1000 + L2*sin(q(0)) - L3*cos(q(0))*cos(q(1)) + (9*cos(q(1) + q(2))*cos(q(0))*sin(q(3)))/500 + (9*sin(q(1) + q(2))*cos(q(0))*cos(q(3)))/500 - cos(q(0))*cos(q(1))*cos(q(2))*(L5 - L11) + cos(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm5_0(1, 1) = sin(q(0))*((9*cos(q(1) + q(2) + q(3)))/500 + L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) + L3*sin(q(1)));
+    Jcm5_0(1, 2) = sin(q(0))*((9*cos(q(1) + q(2) + q(3)))/500 + sin(q(1) + q(2))*(L5 - L11));
+    Jcm5_0(1, 3) = (9*cos(q(1) + q(2) + q(3))*sin(q(0)))/500;
+    Jcm5_0(1, 4) = -(7*cos(q(1) + q(2) + q(3))*sin(q(0)))/1000;
+
+    Jcm5_0(2, 1) = (9*sin(q(1) + q(2) + q(3)))/500 - L5*cos(q(1) + q(2)) + L11*cos(q(1) + q(2)) - L3*cos(q(1));
+    Jcm5_0(2, 2) = (9*sin(q(1) + q(2) + q(3)))/500 - L5*cos(q(1) + q(2)) + L11*cos(q(1) + q(2));
+    Jcm5_0(2, 3) = (9*sin(q(1) + q(2) + q(3)))/500;
+    Jcm5_0(2, 4) = -(7*sin(q(1) + q(2) + q(3)))/1000;
+
+    Jcm5_0(3, 1) = sin(q(0));
+    Jcm5_0(3, 2) = sin(q(0));
+    Jcm5_0(3, 3) = sin(q(0));
+    Jcm5_0(3, 4) = sin(q(1) + q(2) + q(3))*cos(q(0));
+
+    Jcm5_0(4, 1) = -cos(q(0));
+    Jcm5_0(4, 2) = -cos(q(0));
+    Jcm5_0(4, 3) = -cos(q(0));
+    Jcm5_0(4, 4) = sin(q(1) + q(2) + q(3))*sin(q(0));
+
+    Jcm5_0(5, 0) = 1;
+    Jcm5_0(5, 4) = -cos(q(1) + q(2) + q(3));
+}
+
+void URModel::caculet_Jcm6_0(cc::Jacobian &Jcm6_0,
+                        const cc::JointPosition &q) const
+{
+    // Initial
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Jcm6_0(i, j) = 0;
+        }
+    }
+
+    Jcm6_0(0, 0) = L2*cos(q(0)) - (13*cos(q(0))*cos(q(4)))/500 - (13*cos(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4)))/500 + L3*cos(q(1))*sin(q(0)) - L11*sin(q(1) + q(2) + q(3))*sin(q(0)) + cos(q(1))*cos(q(2))*sin(q(0))*(L5 - L11) - sin(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm6_0(0, 1) = cos(q(0))*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) - (13*sin(q(1) + q(2) + q(3))*sin(q(4)))/500 + L3*sin(q(1)) + L11*cos(q(1) + q(2) + q(3)));
+    Jcm6_0(0, 2) = cos(q(0))*(sin(q(1) + q(2))*(L5 - L11) - (13*sin(q(1) + q(2) + q(3))*sin(q(4)))/500 + L11*cos(q(1) + q(2) + q(3)));
+    Jcm6_0(0, 3) = -(cos(q(0))*(13*sin(q(1) + q(2) + q(3))*sin(q(4)) - 500*L11*cos(q(1) + q(2) + q(3))))/500;
+    Jcm6_0(0, 4) = (13*sin(q(0))*sin(q(4)))/500 + (13*cos(q(0))*cos(q(1))*cos(q(2))*cos(q(3))*cos(q(4)))/500 - (13*cos(q(0))*cos(q(1))*cos(q(4))*sin(q(2))*sin(q(3)))/500 - (13*cos(q(0))*cos(q(2))*cos(q(4))*sin(q(1))*sin(q(3)))/500 - (13*cos(q(0))*cos(q(3))*cos(q(4))*sin(q(1))*sin(q(2)))/500;
+
+    Jcm6_0(1, 0) = L2*sin(q(0)) - (13*cos(q(4))*sin(q(0)))/500 + (13*cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4)))/500 - L3*cos(q(0))*cos(q(1)) + L11*sin(q(1) + q(2) + q(3))*cos(q(0)) - cos(q(0))*cos(q(1))*cos(q(2))*(L5 - L11) + cos(q(0))*sin(q(1))*sin(q(2))*(L5 - L11);
+    Jcm6_0(1, 1) = sin(q(0))*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) - (13*sin(q(1) + q(2) + q(3))*sin(q(4)))/500 + L3*sin(q(1)) + L11*cos(q(1) + q(2) + q(3)));
+    Jcm6_0(1, 2) = sin(q(0))*(sin(q(1) + q(2))*(L5 - L11) - (13*sin(q(1) + q(2) + q(3))*sin(q(4)))/500 + L11*cos(q(1) + q(2) + q(3)));
+    Jcm6_0(1, 3) = -(sin(q(0))*(13*sin(q(1) + q(2) + q(3))*sin(q(4)) - 500*L11*cos(q(1) + q(2) + q(3))))/500;
+    Jcm6_0(1, 4) = (13*cos(q(1) + q(2) + q(3))*cos(q(4))*sin(q(0)))/500 - (13*cos(q(0))*sin(q(4)))/500;
+
+    Jcm6_0(2, 1) = (13*sin(q(1) + q(2) + q(3) + q(4)))/1000 - (13*sin(q(1) + q(2) + q(3) - q(4)))/1000 - L5*cos(q(1) + q(2)) + L11*cos(q(1) + q(2)) - L3*cos(q(1)) + L11*sin(q(1) + q(2) + q(3));
+    Jcm6_0(2, 2) = (13*sin(q(1) + q(2) + q(3) + q(4)))/1000 - (13*sin(q(1) + q(2) + q(3) - q(4)))/1000 - L5*cos(q(1) + q(2)) + L11*cos(q(1) + q(2)) + L11*sin(q(1) + q(2) + q(3));
+    Jcm6_0(2, 3) = (13*sin(q(1) + q(2) + q(3) + q(4)))/1000 - (13*sin(q(1) + q(2) + q(3) - q(4)))/1000 + L11*sin(q(1) + q(2) + q(3));
+    Jcm6_0(2, 4) = (13*sin(q(1) + q(2) + q(3) + q(4)))/1000 + (13*sin(q(1) + q(2) + q(3) - q(4)))/1000;
+
+    Jcm6_0(3, 1) = sin(q(0));
+    Jcm6_0(3, 2) = sin(q(0));
+    Jcm6_0(3, 3) = sin(q(0));
+    Jcm6_0(3, 4) = sin(q(1) + q(2) + q(3))*cos(q(0));
+    Jcm6_0(3, 5) = cos(q(4))*sin(q(0)) - cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4));
+
+    Jcm6_0(4, 1) = -cos(q(0));
+    Jcm6_0(4, 2) = -cos(q(0));
+    Jcm6_0(4, 3) = -cos(q(0));
+    Jcm6_0(4, 4) = sin(q(1) + q(2) + q(3))*sin(q(0));
+    Jcm6_0(4, 5) = - cos(q(0))*cos(q(4)) - cos(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4));
+
+    Jcm6_0(5, 0) = 1;
+    Jcm6_0(5, 4) = -cos(q(1) + q(2) + q(3));
+    Jcm6_0(5, 5) = -sin(q(1) + q(2) + q(3))*sin(q(4));
+}
+
+
+#endif
