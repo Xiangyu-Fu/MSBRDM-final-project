@@ -19,7 +19,7 @@ namespace tum_ics_ur_robot_lli
       Ki_(Matrix6d::Zero()),
       Kd_(Matrix6d::Zero()),
       q_goal_(Vector6d::Zero()),
-      model_("ur10_model")
+      model_("ur10_model_test")
     {
     }
 

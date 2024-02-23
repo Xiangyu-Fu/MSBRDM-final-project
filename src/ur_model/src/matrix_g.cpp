@@ -48,6 +48,7 @@ void URModel::matrix_G(cc::VectorDof &G,
   G(2, 0) = a43 * b7 + a54 * b11 + a78 * b12 - b8 * d4 - b10 * d3 + b9 * d6 - b14 * d1 - b15 * d2 + b13 * d5;
   G(3, 0) = a43 * b7 + a54 * b11 + a78 * b12 - b8 * d4 - b10 * d3 + b9 * d6;
   G(4, 0) = (c2 * cos(q(0)) * sin(q(2)) + cos(q(0)) * cos(q(2)) * sin(q(1))) * a43 * c5 * s4 + (cos(q(0)) * cos(q(3)) * sin(q(1)) * sin(q(2)) - c2 * cos(q(0)) * cos(q(2)) * cos(q(3))) * a43 * c5 + (-s1 * s5) * a43 + (c2s1 * sin(q(2)) + s1 * cos(q(2)) * sin(q(1))) * a54 * c5 * s4 + (s1 * cos(q(3)) * sin(q(1)) * sin(q(2)) - c2s1 * cos(q(2)) * cos(q(3))) * a54 * c5 + (s5 * cos(q(0))) * a54 + (a78 * sin(q(1)) * sin(q(2)) - a78 * c2 * cos(q(2))) * c5 * s4 + (-a78 * cos(q(2)) * cos(q(3)) * sin(q(1)) - a78 * c2 * cos(q(3)) * sin(q(2))) * c5;
+
 }
 
 #endif
