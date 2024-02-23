@@ -284,6 +284,9 @@ namespace tum_ics_ur_robot_lli
         // Init model
         theta_ = model_.parameterInitalGuess();
 
+        joint_error_ = Vector6d::Zero();
+        joint_dot_error_ = Vector6d::Zero();
+
       }
 
       //////////////////////////////
