@@ -6,7 +6,7 @@ impedance_ctrl:
   gains_p_cart: [5, 5, 5, 5, 5, 5]
 
   #derivative
-  gains_d: [100, 75, 75, 73, 15, 5]
+  gains_d: [100, 200, 200, 73, 15, 5]
   gains_d_cart: [2, 2, 2, 2, 2, 2]
 
   #integral

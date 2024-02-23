@@ -56,12 +56,14 @@ namespace tum_ics_ur_robot_lli
 
       // params for joint control
       JointState joint_state_;
+      Vector6d joint_error_;
 
       // FIXME: params for cartesian control
       std::string ns_;
       Matrix6d Kp_cart_;
       Matrix6d Kd_cart_;
       Matrix6d Ki_cart_;
+      VVector6d cart_error_;
       ur::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;

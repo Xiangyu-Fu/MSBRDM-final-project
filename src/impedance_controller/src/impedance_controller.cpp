@@ -56,6 +56,7 @@ namespace tum_ics_ur_robot_lli
       }
       ROS_INFO_STREAM("MoveArmCartesian: " << req.x << " " << req.y << " " << req.z << " " << req.rx << " " << req.ry << " " << req.rz);
       control_mode_ = CARTESIAN;
+      cart_error_ = VVector6d::Zero();
       running_time_ = 0.0;
 
       // get the current joint state
@@ -89,6 +90,7 @@ namespace tum_ics_ur_robot_lli
       ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
       control_mode_ = JOINT;
       running_time_ = 0.0;
+      joint_error_ = Vector6d::Zero();
       q_start_ = joint_state_.q;
       q_goal_(0) = req.joint0;
       q_goal_(1) = req.joint1;
@@ -268,6 +270,7 @@ namespace tum_ics_ur_robot_lli
 
         // Init model
         theta_ = model_.parameterInitalGuess();
+
       }
 
       //////////////////////////////
@@ -280,7 +283,7 @@ namespace tum_ics_ur_robot_lli
       running_time_ += dt;
       joint_state_ = state;
       auto X_ee = model_.T_ef_0(state.q);
-      
+
       if(control_mode_ != CARTESIAN)
       {
         ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
@@ -322,6 +325,9 @@ namespace tum_ics_ur_robot_lli
         VVector6d q_desired;
         q_desired = getJointPVT5(q_start_, init_q_goal_, time.tD(), init_period_);
 
+        // integrate error
+        joint_error_ += (state.q - q_desired[0]) * dt;
+
         // reference
         JointState q_ref;
         q_ref = state;
@@ -333,7 +339,6 @@ namespace tum_ics_ur_robot_lli
         // Compute regressor for cartesian control
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        tau = -Kd_ * Sq + Yr * theta_;
         return tau;
       }
 
