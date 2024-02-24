@@ -60,3 +60,51 @@ Please follow the following commands:
 roslaunch tum_ics_ur10_bringup bringUR10.launch
 roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 ```
+
+## Force Torque Sensor
+
+```bash
+
+roslaunch tum_ics_ur10_bringup bringUR10.launch
+rostopic echo /schunk_netbox/raw 
+header: 
+  seq: 27494
+  stamp: 
+    secs: 1708778150
+    nsecs: 385334359
+  frame_id: "ft_sensor_link"
+wrench: 
+  force: 
+    x: -131.479277
+    y: -76.275814
+    z: 486.909591
+  torque: 
+    x: -0.78713
+    y: -6.932118
+    z: -4.1215
+---
+
+rostopic info /schunk_netbox/raw 
+Type: geometry_msgs/WrenchStamped
+
+Publishers: 
+ * /schunk_netbox/schunk_netbox (http://redball:36389/)
+
+Subscribers: None
+
+
+```
+
+## Run the Real Ur
+
+```bash
+roscore
+
+roslaunch tum_ics_ur10_bringup bringUR10.launch
+
+roslaunch tum_ics_ur_robot_manager robot_script_manager_ur10.launch
+
+roslaunch impedance_controller impedance_controller.launch 
+
+rosrun knob_controller knob_control.py 
+```
