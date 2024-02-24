@@ -2,7 +2,7 @@
 
 using namespace ur_model_namespace;
 
-void URModel::caculet_Theta(Parameters &Theta) const
+void URModel::caculet_Theta(Regressor_Theta &Theta) const
 {
     Theta(0,0) = 4*I622 - 4*I611;
     Theta(1,0) = 8*I612;
@@ -70,7 +70,7 @@ void URModel::caculet_Theta(Parameters &Theta) const
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-void URModel::matrix_Yr(Regressor &Y,
+void URModel::caculet_Yr(Regressor_Yr &Yr,
                         const cc::JointPosition &q,
                         const cc::JointVelocity &qp,
                         const cc::JointVelocity &qrp,

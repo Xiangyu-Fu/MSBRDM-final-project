@@ -177,13 +177,13 @@ namespace ur
     return T;
   }
 
-  cc::Jacobian URModel::J_ef_0(const cc::JointPosition &q) const
+  cc::J
+acobian URModel::J_ef_0(const cc::JointPosition &q) const
   {
     cc::Jacobian J = cc::Jacobian::Zero();
     matrix_J6_0(J, q);
     return J;
   }
-
   cc::Jacobian URModel::J_tool_0(const cc::JointPosition &q) const
   {
     cc::Jacobian J = cc::Jacobian::Zero();

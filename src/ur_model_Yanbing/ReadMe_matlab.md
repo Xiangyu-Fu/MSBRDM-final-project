@@ -11,8 +11,7 @@
 - Jacobian_dot
 
 ## 代办
-- 将函数都写入ur_model.h和.cpp中
-- 修改control中使用的model_函数名
+- 切换DH
 - IK
 - J_time(可能需要)
 
@@ -22,5 +21,11 @@
   通过验证√
 - 数组q, qp, qpp, qrp, qrpp
 - cc::初始化
-  - 也许需要在ur_model.cpp就对全部初始化？（提高效率）
-  - Transformation Matrix: 3*3单位矩阵+
+  - M, C, G, Theta, Y: 
+  在ur_model.cpp初始化时已是全零矩阵  
+  因此`auto_save.m`时`skipZeros = true;`
+  - Transformation Matrix:  
+  没初始化  
+  因此`skipZeros = false;`  
+  - Jacobian:  
+  可以通过`cc::Jacobian::Zero();`初始化

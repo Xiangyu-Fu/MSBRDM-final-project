@@ -8,7 +8,7 @@
 
 %% Transformation Matrix
 
-skipZeros = true;
+skipZeros = false;
 
 folderPath = './save_Matrix/Transformation_Matrix';
 if ~exist(folderPath, 'dir')
@@ -93,7 +93,7 @@ eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', ma
 
 %% Regressor
 
-skipZeros = false;
+skipZeros = true;
 
 folderPath = './save_Matrix/Regressor';
 if ~exist(folderPath, 'dir')
