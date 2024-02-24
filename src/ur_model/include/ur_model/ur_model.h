@@ -250,11 +250,11 @@ namespace ur
     cc::Jacobian Jcm_j_0(const cc::JointPosition &q, int j) const;
 
     /** 
-    * @brief jacobian matrix at j-th joint offseted by length tj wrt 0 frame 
+    * @brief jacobian matrix at j-th center of mass offseted by length tj wrt robot base frame
     * 
     * Joint index j in range: 0-5
     */
-    cc::Jacobian Jt_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
+    cc::Jacobian Jtcm_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
 
     /** 
     * @brief endeffector jacobian derivative wrt robot base frame 
