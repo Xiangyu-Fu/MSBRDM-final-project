@@ -1,0 +1,12 @@
+J3_0_dot(0,0) = qp(0)*(L3*cos(q(0))*cos(q(1)) + cos(q(0))*cos(q(1))*cos(q(2))*(L5 - L11) - cos(q(0))*sin(q(1))*sin(q(2))*(L5 - L11)) - qp(1)*(L3*sin(q(0))*sin(q(1)) + cos(q(1))*sin(q(0))*sin(q(2))*(L5 - L11) + cos(q(2))*sin(q(0))*sin(q(1))*(L5 - L11)) - qp(2)*(cos(q(1))*sin(q(0))*sin(q(2))*(L5 - L11) + cos(q(2))*sin(q(0))*sin(q(1))*(L5 - L11));
+J3_0_dot(0,1) = qp(1)*cos(q(0))*(cos(q(1) + q(2))*(L5 - L11) + L3*cos(q(1))) - qp(0)*sin(q(0))*(sin(q(1) + q(2))*(L5 - L11) + L3*sin(q(1))) + qp(2)*cos(q(1) + q(2))*cos(q(0))*(L5 - L11);
+J3_0_dot(0,2) = qp(1)*cos(q(1) + q(2))*cos(q(0))*(L5 - L11) + qp(2)*cos(q(1) + q(2))*cos(q(0))*(L5 - L11) - qp(0)*sin(q(1) + q(2))*sin(q(0))*(L5 - L11);
+J3_0_dot(1,0) = qp(1)*(L3*cos(q(0))*sin(q(1)) + cos(q(0))*cos(q(1))*sin(q(2))*(L5 - L11) + cos(q(0))*cos(q(2))*sin(q(1))*(L5 - L11)) + qp(0)*(L3*cos(q(1))*sin(q(0)) + cos(q(1))*cos(q(2))*sin(q(0))*(L5 - L11) - sin(q(0))*sin(q(1))*sin(q(2))*(L5 - L11)) + qp(2)*(cos(q(0))*cos(q(1))*sin(q(2))*(L5 - L11) + cos(q(0))*cos(q(2))*sin(q(1))*(L5 - L11));
+J3_0_dot(1,1) = qp(1)*sin(q(0))*(cos(q(1) + q(2))*(L5 - L11) + L3*cos(q(1))) + qp(0)*cos(q(0))*(sin(q(1) + q(2))*(L5 - L11) + L3*sin(q(1))) + qp(2)*cos(q(1) + q(2))*sin(q(0))*(L5 - L11);
+J3_0_dot(1,2) = qp(0)*sin(q(1) + q(2))*cos(q(0))*(L5 - L11) + qp(1)*cos(q(1) + q(2))*sin(q(0))*(L5 - L11) + qp(2)*cos(q(1) + q(2))*sin(q(0))*(L5 - L11);
+J3_0_dot(2,1) = qp(1)*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)) + L3*sin(q(1))) + qp(2)*(L5*sin(q(1) + q(2)) - L11*sin(q(1) + q(2)));
+J3_0_dot(2,2) = qp(1)*sin(q(1) + q(2))*(L5 - L11) + qp(2)*sin(q(1) + q(2))*(L5 - L11);
+J3_0_dot(3,1) = qp(0)*cos(q(0));
+J3_0_dot(3,2) = qp(0)*cos(q(0));
+J3_0_dot(4,1) = qp(0)*sin(q(0));
+J3_0_dot(4,2) = qp(0)*sin(q(0));

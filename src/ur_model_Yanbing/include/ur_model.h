@@ -41,10 +41,9 @@ namespace ur_model_namespace
         ////////////////////////////////
 
         typedef model_interface::ModelBase Base;
-        typedef cc::MatrixX Regressor_theta;
-        typedef cc::VectorX Regressor_Yr;
+        typedef cc::VectorX Regressor_Theta;    // 61*1
+        typedef cc::MatrixX Regressor_Yr;       // 6*61
         
-
 
     private:
         ////////////////////////////////
@@ -71,7 +70,7 @@ namespace ur_model_namespace
         cc::MatrixDof C_;
         cc::VectorDof G_;
 
-        Regressor_theta theta_;
+        Regressor_Theta Theta_;
         Regressor_Yr Yr_;
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,26 +87,40 @@ namespace ur_model_namespace
 
         ////////////////////////////////
         // Member function
-        // Inverse Kinematics
-        // M, C, G
-        // Theta, Yr
-        // Transformation Matrix: Ti_0 & Tcmi_0, i=1...6
-        // Jacobian Matrix: Ji_0 & Jcmi_0, i=1...6
+        ////////////////////////////////
+
+        ////////////////////////////////
+        /// M, C, G Matrix caculet
+        /// Update(used [private] funciton) & Return
+        ////////////////////////////////
+        const cc::MatrixDof &Inertia_Matrix(const cc::JointPosition &q);
+        const cc::MatrixDof &Coriolis_Matrix(const cc::JointPosition &q);
+        const cc::MatrixDof &Gravity_Matrix(const cc::JointPosition &q);
+        
+        ////////////////////////////////
+        /// Yr, Theta caculet
+        ////////////////////////////////
+        const Regressor_Yr &regressor_Yr(const cc::JointPosition &q, 
+                                        const cc::JointVelocity &qp, 
+                                        const cc::JointVelocity &qrp, 
+                                        const cc::JointAcceleration &qrpp);
+        const Regressor_Theta &regressor_Theta();
+
+        ////////////////////////////////
+        /// Transformation Matrix: Ti_0 & Tcmi_0, i=1...6
+        ////////////////////////////////
+
+
+        ////////////////////////////////
+        /// Jacobian Matrix: Ji_0 & Jcmi_0, i=1...6
         //                  Jdot_i_0 & Jdot_cmi_0, i=1...6
         ////////////////////////////////
 
-        ///
-        /// \brief M, C, G Matrix caculet
-        /// \param M_, C_, G_
-        /// \param joint state q
-        /// \return Update & Return
-        ///
-        const cc::MatrixDof &URModel::Mass_Matrix(const cc::JointPosition &q);
-        const cc::MatrixDof &URModel::Coriolis_Matrix(const cc::JointPosition &q);
-        const cc::MatrixDof &URModel::Gravity_Matrix(const cc::JointPosition &q);
 
-
-
+        ////////////////////////////////
+        /// Inverse Kinematics
+        ////////////////////////////////
+        
 
     private:
         ////////////////////////////////

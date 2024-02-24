@@ -8,6 +8,8 @@
 
 %% Transformation Matrix
 
+skipZeros = true;
+
 folderPath = './save_Matrix/Transformation_Matrix';
 if ~exist(folderPath, 'dir')
     mkdir(folderPath);
@@ -17,16 +19,18 @@ for i = 1:6
     matrixName = sprintf('T%d_0', i);
     fileName = sprintf('%s.txt', matrixName);
     % 动态引用矩阵变量并传递给save_matrix函数
-    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 end
 
 for i = 1:6
     matrixName = sprintf('Tcm%d_0', i);
     fileName = sprintf('%s.txt', matrixName);
-    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 end
 
 %% Jacobian
+
+skipZeros = true;
 
 folderPath = './save_Matrix/Jacobian';
 if ~exist(folderPath, 'dir')
@@ -36,24 +40,39 @@ end
 for i = 1:6
     matrixName = sprintf('J%d_0', i);
     fileName = sprintf('%s.txt', matrixName);
-    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 end
 
 for i = 1:6
     matrixName = sprintf('Jcm%d_0', i);
     fileName = sprintf('%s.txt', matrixName);
-    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 end
 
 %% Jacobian_dot
+
+skipZeros = true;
 
 folderPath = './save_Matrix/Jacobian_dot';
 if ~exist(folderPath, 'dir')
     mkdir(folderPath);
 end
 
+for i = 1:6
+    matrixName = sprintf('J%d_0_dot', i);
+    fileName = sprintf('%s.txt', matrixName);
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
+end
+
+for i = 1:6
+    matrixName = sprintf('Jcm%d_0_dot', i);
+    fileName = sprintf('%s.txt', matrixName);
+    eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
+end
 
 %% M, C, G
+
+skipZeros = true;
 
 folderPath = './save_Matrix/Regressor';
 if ~exist(folderPath, 'dir')
@@ -62,17 +81,19 @@ end
 
 matrixName = 'M';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 matrixName = 'C';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 matrixName = 'G';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 %% Regressor
+
+skipZeros = false;
 
 folderPath = './save_Matrix/Regressor';
 if ~exist(folderPath, 'dir')
@@ -85,15 +106,15 @@ load('Y.mat');
 
 matrixName = 'Theta';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 matrixName = 'Yr';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 matrixName = 'Y';
 fileName = sprintf('%s.txt', matrixName);
-eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
+eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath, skipZeros);', matrixName));
 
 %% Test
 % syms qpp1 qpp2 qpp3 real
@@ -113,7 +134,7 @@ eval(sprintf('save_matrix(%s, matrixName, fileName, folderPath);', matrixName));
 
 %% Function
 
-function save_matrix(matrix, matrixName, fileName, folderPath)
+function save_matrix(matrix, matrixName, fileName, folderPath, skipZeros)
 
     fullPath = fullfile(folderPath, fileName);
     fileID = fopen(fullPath, 'w');
@@ -133,6 +154,11 @@ function save_matrix(matrix, matrixName, fileName, folderPath)
             currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
             currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
             currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
+
+            % 跳过值为0的元素
+            if skipZeros && strcmp(currentElement, '0')
+                continue;
+            end
             
             % str = sprintf('T1(%d,%d) = %s;', i-1, j-1, currentElement);
             str = sprintf('%s(%d,%d) = %s;', matrixName, i-1, j-1, currentElement);

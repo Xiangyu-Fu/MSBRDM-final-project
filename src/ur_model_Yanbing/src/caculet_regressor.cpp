@@ -67,6 +67,9 @@ void URModel::caculet_Theta(Parameters &Theta) const
     Theta(60,0) = I522 + I611 + (49*m5)/1000000 + (169*m6)/250000;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 void URModel::matrix_Yr(Regressor &Y,
                         const cc::JointPosition &q,
                         const cc::JointVelocity &qp,

@@ -239,9 +239,9 @@ function J_dot = Jacobian_dot(J)
     syms q1 q2 q3 q4 q5 q6 real
     syms qp1 qp2 qp3 qp4 qp5 qp6 real
 
-    J_dot = sym(zeros(3, 3));
-    for i = 1:3
-        for j = 1:3
+    J_dot = sym(zeros(6, 6));
+    for i = 1:6
+        for j = 1:6
             for k = 1:6
                 qk = sym(['q', num2str(k)]);
                 qpk = sym(['qp', num2str(k)]);
