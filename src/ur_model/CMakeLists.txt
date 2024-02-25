@@ -108,7 +108,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ur_model
  CATKIN_DEPENDS control_core roscpp tf
- DEPENDS system_lib
+ DEPENDS EIGEN3
 )
 
 ###########
@@ -118,25 +118,25 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
 )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/ur_model.cpp
-  src/${PROJECT_NAME}/caculet_FK.cpp
-  src/${PROJECT_NAME}/caculet_jacobian.cpp
-  src/${PROJECT_NAME}/caculet_jacobian_dot.cpp
-  src/${PROJECT_NAME}/caculet_MCG.cpp
-  src/${PROJECT_NAME}/caculet_regressor.cpp  
-  # src/ur_model.cpp
-  # src/caculet_FK.cpp
-  # src/caculet_jacobian.cpp
-  # src/caculet_jacobian_dot.cpp
-  # src/caculet_MCG.cpp
-  # src/caculet_regressor.cpp  
+  # src/${PROJECT_NAME}/ur_model.cpp
+  # src/${PROJECT_NAME}/caculet_FK.cpp
+  # src/${PROJECT_NAME}/caculet_jacobian.cpp
+  # src/${PROJECT_NAME}/caculet_jacobian_dot.cpp
+  # src/${PROJECT_NAME}/caculet_MCG.cpp
+  # src/${PROJECT_NAME}/caculet_regressor.cpp  
+  src/ur_model.cpp
+  src/caculet_FK.cpp
+  src/caculet_jacobian.cpp
+  src/caculet_jacobian_dot.cpp
+  src/caculet_MCG.cpp
+  src/caculet_regressor.cpp  
 )
 
 ## Add cmake target dependencies of the library

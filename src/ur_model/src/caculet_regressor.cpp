@@ -296,5 +296,3 @@ void URModel::caculet_Yr(Regressor_Yr &Yr,
     Yr(5,33) = (qp(4)*(qp(0)*sin(q(1) + q(2) + q(3) + q(4)) + 2*qp(1)*s5 + 2*qp(2)*s5 + 2*qp(3)*s5 + qp(0)*sin(q(1) + q(2) + q(3) - q(4))))/2;
     Yr(5,34) = (qp(0)*(sin(q(1) + q(2) + q(3) + q(4)) - sin(q(1) + q(2) + q(3) - q(4)))*(qp(1) + qp(2) + qp(3)))/2;
 }
-
-#endif

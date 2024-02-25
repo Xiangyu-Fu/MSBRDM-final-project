@@ -4,13 +4,13 @@
 using namespace ur_model_namespace;
 
 void URModel::caculet_J1_0_dot(cc::Jacobian &J1_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
 }
 
 void URModel::caculet_J2_0_dot(cc::Jacobian &J2_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     J2_0_dot(0,0) = L2*qp(1)*sin(q(0))*sin(q(1)) - L2*qp(0)*cos(q(0))*cos(q(1));
@@ -23,7 +23,7 @@ void URModel::caculet_J2_0_dot(cc::Jacobian &J2_0_dot,
 }
 
 void URModel::caculet_J3_0_dot(cc::Jacobian &J3_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     J3_0_dot(0,0) = qp(1)*sin(q(0))*(L3*sin(q(1) + q(2)) + L2*sin(q(1))) - qp(0)*cos(q(0))*(L3*cos(q(1) + q(2)) + L2*cos(q(1))) + L3*qp(2)*sin(q(1) + q(2))*sin(q(0));
@@ -41,7 +41,7 @@ void URModel::caculet_J3_0_dot(cc::Jacobian &J3_0_dot,
 }
 
 void URModel::caculet_J4_0_dot(cc::Jacobian &J4_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     J4_0_dot(0,0) = qp(1)*(L2*sin(q(0))*sin(q(1)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) - qp(0)*(L4*sin(q(0)) + L2*cos(q(0))*cos(q(1)) + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) + qp(2)*(L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1)));
@@ -61,7 +61,7 @@ void URModel::caculet_J4_0_dot(cc::Jacobian &J4_0_dot,
 }
 
 void URModel::caculet_J5_0_dot(cc::Jacobian &J5_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     J5_0_dot(0,0) = qp(1)*(L5*(cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))) + sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1)))) + L2*sin(q(0))*sin(q(1)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) - qp(0)*(L4*sin(q(0)) + L5*(cos(q(3))*(cos(q(0))*cos(q(1))*sin(q(2)) + cos(q(0))*cos(q(2))*sin(q(1))) + sin(q(3))*(cos(q(0))*cos(q(1))*cos(q(2)) - cos(q(0))*sin(q(1))*sin(q(2)))) + L2*cos(q(0))*cos(q(1)) + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) + qp(2)*(L5*(cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))) + sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1)))) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) + L5*qp(3)*(cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))) + sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1))));
@@ -87,7 +87,7 @@ void URModel::caculet_J5_0_dot(cc::Jacobian &J5_0_dot,
 }
 
 void URModel::caculet_J6_0_dot(cc::Jacobian &J6_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     J6_0_dot(0,0) = qp(1)*(L2*sin(q(0))*sin(q(1)) - L5*cos(q(1) + q(2) + q(3))*sin(q(0)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1)) - L6*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4))) - qp(3)*(L5*cos(q(1) + q(2) + q(3))*sin(q(0)) + L6*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4))) - qp(2)*(L5*cos(q(1) + q(2) + q(3))*sin(q(0)) - L3*cos(q(1))*sin(q(0))*sin(q(2)) - L3*cos(q(2))*sin(q(0))*sin(q(1)) + L6*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4))) - qp(0)*(L6*(cos(q(4))*sin(q(0)) - cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4))) + L4*sin(q(0)) + L2*cos(q(0))*cos(q(1)) + L5*sin(q(1) + q(2) + q(3))*cos(q(0)) + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) - L6*qp(4)*(cos(q(0))*sin(q(4)) - cos(q(1) + q(2) + q(3))*cos(q(4))*sin(q(0)));
@@ -124,13 +124,13 @@ void URModel::caculet_J6_0_dot(cc::Jacobian &J6_0_dot,
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 void URModel::caculet_Jcm1_0_dot(cc::Jacobian &Jcm1_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
 }
 
 void URModel::caculet_Jcm2_0_dot(cc::Jacobian &Jcm2_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     Jcm2_0_dot(0,0) = -qp(0)*((19*cos(q(0)))/50 + (79*sin(q(0)))/500);
@@ -140,7 +140,7 @@ void URModel::caculet_Jcm2_0_dot(cc::Jacobian &Jcm2_0_dot,
 }
 
 void URModel::caculet_Jcm3_0_dot(cc::Jacobian &Jcm3_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     Jcm3_0_dot(0,0) = qp(1)*((6*sin(q(0))*sin(q(1)))/25 + L2*sin(q(0))*sin(q(1))) - qp(0)*((17*sin(q(0)))/250 + (6*cos(q(0))*cos(q(1)))/25 + L2*cos(q(0))*cos(q(1)));
@@ -158,7 +158,7 @@ void URModel::caculet_Jcm3_0_dot(cc::Jacobian &Jcm3_0_dot,
 }
 
 void URModel::caculet_Jcm4_0_dot(cc::Jacobian &Jcm4_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     Jcm4_0_dot(0,0) = qp(1)*(L2*sin(q(0))*sin(q(1)) - (7*sin(q(0))*sin(q(1))*sin(q(2)))/1000 + (7*cos(q(1))*cos(q(2))*sin(q(0)))/1000 + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) - qp(0)*((9*sin(q(0)))/500 + L2*cos(q(0))*cos(q(1)) - (7*cos(q(0))*cos(q(1))*sin(q(2)))/1000 - (7*cos(q(0))*cos(q(2))*sin(q(1)))/1000 + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) + qp(2)*((7*cos(q(1))*cos(q(2))*sin(q(0)))/1000 - (7*sin(q(0))*sin(q(1))*sin(q(2)))/1000 + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1)));
@@ -181,7 +181,7 @@ void URModel::caculet_Jcm4_0_dot(cc::Jacobian &Jcm4_0_dot,
 }
 
 void URModel::caculet_Jcm5_0_dot(cc::Jacobian &Jcm5_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     Jcm5_0_dot(0,0) = qp(3)*((9*cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))))/500 + (9*sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1))))/500) + qp(1)*((9*cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))))/500 + (9*sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1))))/500 + L2*sin(q(0))*sin(q(1)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) - qp(0)*((7*sin(q(0)))/1000 + (9*cos(q(3))*(cos(q(0))*cos(q(1))*sin(q(2)) + cos(q(0))*cos(q(2))*sin(q(1))))/500 + (9*sin(q(3))*(cos(q(0))*cos(q(1))*cos(q(2)) - cos(q(0))*sin(q(1))*sin(q(2))))/500 + L4*sin(q(0)) + L2*cos(q(0))*cos(q(1)) + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) + qp(2)*((9*cos(q(3))*(sin(q(0))*sin(q(1))*sin(q(2)) - cos(q(1))*cos(q(2))*sin(q(0))))/500 + (9*sin(q(3))*(cos(q(1))*sin(q(0))*sin(q(2)) + cos(q(2))*sin(q(0))*sin(q(1))))/500 + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1)));
@@ -210,7 +210,7 @@ void URModel::caculet_Jcm5_0_dot(cc::Jacobian &Jcm5_0_dot,
 }
 
 void URModel::caculet_Jcm6_0_dot(cc::Jacobian &Jcm6_0_dot,
-                        const cc::JointPosition &q
+                        const cc::JointPosition &q,
                         const cc::JointVelocity &qp) const
 {
     Jcm6_0_dot(0,0) = qp(3)*((13*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4)))/500 - L5*cos(q(1) + q(2) + q(3))*sin(q(0))) + qp(1)*((13*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4)))/500 + L2*sin(q(0))*sin(q(1)) - L5*cos(q(1) + q(2) + q(3))*sin(q(0)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1))) - qp(0)*(L4*sin(q(0)) - (13*cos(q(4))*sin(q(0)))/500 + (13*cos(q(1) + q(2) + q(3))*cos(q(0))*sin(q(4)))/500 + L2*cos(q(0))*cos(q(1)) + L5*sin(q(1) + q(2) + q(3))*cos(q(0)) + L3*cos(q(0))*cos(q(1))*cos(q(2)) - L3*cos(q(0))*sin(q(1))*sin(q(2))) + qp(4)*((13*cos(q(0))*sin(q(4)))/500 - (13*cos(q(1) + q(2) + q(3))*cos(q(4))*sin(q(0)))/500) + qp(2)*((13*sin(q(1) + q(2) + q(3))*sin(q(0))*sin(q(4)))/500 - L5*cos(q(1) + q(2) + q(3))*sin(q(0)) + L3*cos(q(1))*sin(q(0))*sin(q(2)) + L3*cos(q(2))*sin(q(0))*sin(q(1)));
@@ -240,5 +240,3 @@ void URModel::caculet_Jcm6_0_dot(cc::Jacobian &Jcm6_0_dot,
     Jcm6_0_dot(5,4) = qp(1)*sin(q(1) + q(2) + q(3)) + qp(2)*sin(q(1) + q(2) + q(3)) + qp(3)*sin(q(1) + q(2) + q(3));
     Jcm6_0_dot(5,5) = - qp(1)*cos(q(1) + q(2) + q(3))*sin(q(4)) - qp(2)*cos(q(1) + q(2) + q(3))*sin(q(4)) - qp(3)*cos(q(1) + q(2) + q(3))*sin(q(4)) - qp(4)*sin(q(1) + q(2) + q(3))*cos(q(4));
 }
-
-#endif

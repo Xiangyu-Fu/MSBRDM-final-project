@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh("~");
 
   // initalize the model (only done once!)
-  ur::URModel model("ur10_model");
+  ur_model_namespace::URModel model("ur10_model");
 
   // load the intial parameters from the parameter server
   if(!model.initRequest(nh))
@@ -26,10 +26,10 @@ int main(int argc, char **argv)
   qrpp.setZero();
   
   // Initalize the robot regressor matrix
-  ur::URModel::Regressor Y = model.Regressor_Yr(q, qp, qrp, qrpp);
+  ur_model_namespace::URModel::Regressor Y = model.Regressor_Yr(q, qp, qrp, qrpp);
   
   // Initalize the robots parameter vector
-  ur::URModel::Parameters th = model.Regressor_Theta(); 
+  ur_model_namespace::URModel::Parameters th = model.Regressor_Theta(); 
 
   // get the end-effector transformation wrt 0 frame
   Eigen::Affine3d T_ef_0 = model.Tef_0(q);

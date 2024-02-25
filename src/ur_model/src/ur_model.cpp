@@ -1,6 +1,9 @@
 #include <ur_model/ur_model.h>
-#include <ur_model/model_base.h>
+#include <control_core/common/parameter.h>
 #include <math.h>
+#include <string>
+#include <Eigen/Dense>
+
 
 namespace ur_model_namespace
 {
@@ -10,12 +13,14 @@ namespace ur_model_namespace
 
     URModel::URModel(const std::string &name): 
         Base(name), 
-        M_(Matrix6d::Zero()),
-        C_(Matrix6d::Zero()),
-        G_(Vector6D::Zero()),
-        Theta_.setZero(61, 1),
-        Yr_.setZero(6, 61)
+        M_(Eigen::Matrix6d::Zero()),
+        C_(Eigen::Matrix6d::Zero()),
+        G_(Eigen::Vector6D::Zero()),
+        Theta_(61, 1),  // 正确的使用 setZero() 函数
+        Yr_(6, 61)  
     {
+    Theta_.setZero();
+    Yr_.setZero();
     }
 
     URModel::~URModel()
@@ -30,9 +35,15 @@ namespace ur_model_namespace
         std::string ns = Base::name() + '/';
         std::cout << "name: " << Base::name() << std::endl;
 
-        for (int i = 1; i <= 6; ++i) {
-            cc::load(ns + "L" + std::to_string(i));
-        }
+        // for (int i = 1; i <= 6; ++i) {
+        //     cc::load(ns + "L" + std::to_string(i));
+        // }
+        cc::load(ns+"L1", L1);
+        cc::load(ns+"L2", L2);
+        cc::load(ns+"L3", L3);
+        cc::load(ns+"L4", L4);
+        cc::load(ns+"L5", L5);
+        cc::load(ns+"L6", L6);
         L7 = L8 = L9 = L10 = L11 = L12 = 0.0;
         m1 = m2 = m3 = m4 = m5 = m6 = 0.0;
         I111 = I112 = I113 = I122 = I123 = I133 = 0.0;
@@ -83,7 +94,7 @@ namespace ur_model_namespace
     ////////////////////////////////
     const URModel::Regressor_Theta &URModel::Theta_function()
     {
-        caculet_Theta(Theta_);
+        // caculet_Theta(Theta_);
         return Theta_;
     }
 
@@ -264,14 +275,8 @@ namespace ur_model_namespace
         return J_dot;
     }
 
-    
-
-
-
-
-
 
 
 } // namespace ur_model_namespace
 
-#endif // UR_MODEL_CPP
+// #endif // UR_MODEL_CPP

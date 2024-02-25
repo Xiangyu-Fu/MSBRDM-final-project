@@ -244,5 +244,3 @@ void URModel::caculet_Jcm6_0(cc::Jacobian &Jcm6_0,
     Jcm6_0(5,5) = -sin(q(1) + q(2) + q(3))*sin(q(4));
 }
 
-
-#endif
