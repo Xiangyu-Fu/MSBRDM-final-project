@@ -14,8 +14,8 @@ namespace ur
                                               g_(cc::VectorDof::Zero())
   {
     // initalize correct size
-    theta_.setZero(45, 1);
-    Yr_.setZero(6, 45);
+    theta_.setZero(61, 1);
+    Yr_.setZero(6, 61);
   }
 
   URModel::~URModel()
