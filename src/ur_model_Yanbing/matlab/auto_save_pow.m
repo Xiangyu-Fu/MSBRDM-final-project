@@ -126,9 +126,10 @@ syms qpp1r qpp2r qpp3r real
 syms qp1r qp1 q1 real
 syms L1 L2 L3 real
 
-currentElement = qpp1^2 + qpp1r*L3^2 + qp1r*q1 + cos(qp1)^2 
+currentElement = qpp1^2 + qpp1r*L3^2 + qp1r*q1 + cos(q1)^2 
 currentElement = char(currentElement);
 
+currentElement = replaceCosSin(currentElement);
 currentElement = replaceIndexedTerms(currentElement);
 currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
 currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
@@ -142,44 +143,102 @@ currentElement
 
 %% Function
 
-function save_matrix(matrix, matrixName, fileName, folderPath, skipZeros)
+% function save_matrix(matrix, matrixName, fileName, folderPath, skipZeros)
+% 
+%     fullPath = fullfile(folderPath, fileName);
+%     fileID = fopen(fullPath, 'w');
+%     if fileID == -1
+%         error('File cannot be opened.');
+%     end
+% 
+%     for i = 1:size(matrix, 1)
+%         for j = 1:size(matrix, 2)
+% 
+%             currentElement = matrix(i, j);
+%             currentElement = char(currentElement);
+% 
+%             % 替换cos(qi)和sin(qi)
+%             currentElement = replaceCosSin(currentElement);
+% 
+%             % 解决qpp(i)r和qp(i)r
+%             currentElement = replaceIndexedTerms(currentElement);
+%             % 解决q(i),qp(i),qpp(i)
+%             currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
+%             currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
+%             currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
+% 
+%             % 替换幂运算
+%             currentElement = replacePowerOperation(currentElement);
+% 
+%             % 跳过值为0的元素
+%             if skipZeros && strcmp(currentElement, '0')
+%                 continue;
+%             end
+% 
+%             % str = sprintf('T1(%d,%d) = %s;', i-1, j-1, currentElement);
+%             str = sprintf('%s(%d,%d) = %s;', matrixName, i-1, j-1, currentElement);
+%             fprintf(fileID, '%s\n', str);
+%         end
+%     end
+% 
+%     fclose(fileID);
+%     disp(['Matrix ' fileName ' saved to file successfully .']);
+% end
 
+
+function save_matrix(matrix, matrixName, fileName, folderPath, skipZeros)
     fullPath = fullfile(folderPath, fileName);
     fileID = fopen(fullPath, 'w');
     if fileID == -1
         error('File cannot be opened.');
     end
 
+    cosSinDeclarations = containers.Map('KeyType', 'char', 'ValueType', 'char');
+
+    % 先不写入文件，收集ci和si
     for i = 1:size(matrix, 1)
         for j = 1:size(matrix, 2)
-
             currentElement = matrix(i, j);
             currentElement = char(currentElement);
-            
-            % 解决qpp(i)r和qp(i)r
+
+            % 新增替换逻辑
+            [currentElement, cosSinDeclarations] = replaceCosSin(currentElement, cosSinDeclarations);
+
+            % 其余处理保持不变
             currentElement = replaceIndexedTerms(currentElement);
-            % 解决q(i),qp(i),qpp(i)
             currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
             currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
             currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
-
-            % 替换幂运算
             currentElement = replacePowerOperation(currentElement);
             
-            % 跳过值为0的元素
             if skipZeros && strcmp(currentElement, '0')
                 continue;
             end
             
-            % str = sprintf('T1(%d,%d) = %s;', i-1, j-1, currentElement);
             str = sprintf('%s(%d,%d) = %s;', matrixName, i-1, j-1, currentElement);
-            fprintf(fileID, '%s\n', str);
+            matrixContent{i, j} = str; % 改为先保存内容
+        end
+    end
+
+    % 写入ci和si声明
+    cosSinKeys = cosSinDeclarations.keys;
+    for k = 1:length(cosSinKeys)
+        fprintf(fileID, '%s\n', cosSinDeclarations(cosSinKeys{k}));
+    end
+
+    % 写入矩阵内容
+    for i = 1:size(matrixContent, 1)
+        for j = 1:size(matrixContent, 2)
+            if ~isempty(matrixContent{i, j})
+                fprintf(fileID, '%s\n', matrixContent{i, j});
+            end
         end
     end
 
     fclose(fileID);
-    disp(['Matrix ' fileName ' saved to file successfully .']);
+    disp(['Matrix ' fileName ' saved to file successfully.']);
 end
+
 
 % 使用正则表达式查找并替代：qi, qpi
 function outStr = replacePattern(inputStr, pattern, prefix)
@@ -242,4 +301,28 @@ function outStr = replacePowerOperation(inputStr)
         
         outStr = [outStr(1:startIndex(i)-1) multiplicationStr outStr(endIndex(i)+1:end)];
     end
+end
+
+% 替换cos(qi)和sin(qi)
+function [outputStr, cosSinDeclarations] = replaceCosSin(inputStr, cosSinDeclarations)
+    cosPattern = 'cos\(q(\d+)\)';
+    sinPattern = 'sin\(q(\d+)\)';
+    
+    [startIndex, endIndex, tokens] = regexp(inputStr, cosPattern, 'start', 'end', 'tokens');
+    for i = 1:length(tokens)
+        index = tokens{i}{1};
+        cosStr = sprintf('c%s', index);
+        cosSinDeclarations(cosStr) = sprintf('cc::Scalar %s = cos(q(%d));', cosStr, str2double(index)-1);
+        inputStr = regexprep(inputStr, ['cos\(q', index, '\)'], cosStr, 'once');
+    end
+
+    [startIndex, endIndex, tokens] = regexp(inputStr, sinPattern, 'start', 'end', 'tokens');
+    for i = 1:length(tokens)
+        index = tokens{i}{1};
+        sinStr = sprintf('s%s', index);
+        cosSinDeclarations(sinStr) = sprintf('cc::Scalar %s = sin(q(%d));', sinStr, str2double(index)-1);
+        inputStr = regexprep(inputStr, ['sin\(q', index, '\)'], sinStr, 'once');
+    end
+
+    outputStr = inputStr;
 end
