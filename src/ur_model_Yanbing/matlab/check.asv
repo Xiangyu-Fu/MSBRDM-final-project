@@ -22,7 +22,7 @@ Y = load(Y_fileName).Y;
 Theta = load(Theta_fileName).Theta;
 M = load(M_fileName).M;
 C = load(C_fileName).C;
-G = load(G_fileName).G;
+G = load(G_fileName).Y;
 
 
 %% Check
