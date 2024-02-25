@@ -217,9 +217,29 @@ function outStr = replaceIndexedTerms(inputStr)
 end
 
 
-% 替换幂运算为std::pow
+% % 替换幂运算为std::pow
+% function outStr = replacePowerOperation(inputStr)
+%     pattern = '([\w\(\)\d]+)\^(\d+\.?\d*)'; % 匹配形如 x(i)^2, L5^2, cos(q(4))^2 的模式
+%     replaceFormat = 'std::pow($1, $2)'; % 替换格式为 std::pow(x(i), 2), std::pow(L5, 2), std::pow(cos(q(4)), 2)
+%     outStr = regexprep(inputStr, pattern, replaceFormat);
+% end
+
+% 将幂运算简单替换为重复的乘法形式
 function outStr = replacePowerOperation(inputStr)
-    pattern = '([\w\(\)\d]+)\^(\d+\.?\d*)'; % 匹配形如 x(i)^2, L5^2, cos(q(4))^2 的模式
-    replaceFormat = 'std::pow($1, $2)'; % 替换格式为 std::pow(x(i), 2), std::pow(L5, 2), std::pow(cos(q(4)), 2)
-    outStr = regexprep(inputStr, pattern, replaceFormat);
+    outStr = inputStr;
+    pattern = '([\w\(\)\d]+)\^(\d+)'; % 匹配形如 x(i)^2, L5^2, cos(q(4))^2 的模式
+    
+    [startIndex, endIndex, tokens] = regexp(outStr, pattern, 'start', 'end', 'tokens');
+    
+    for i = length(startIndex):-1:1
+        base = tokens{i}{1};
+        exponent = str2double(tokens{i}{2});
+        
+        multiplicationStr = base;
+        for j = 2:exponent % 从2开始因为已经有一个基数了
+            multiplicationStr = [multiplicationStr '*' base];
+        end
+        
+        outStr = [outStr(1:startIndex(i)-1) multiplicationStr outStr(endIndex(i)+1:end)];
+    end
 end
