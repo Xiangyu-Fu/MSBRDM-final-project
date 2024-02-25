@@ -128,15 +128,12 @@ add_library(${PROJECT_NAME}
   src/model_ur.cpp
   src/jacobians_p.cpp
   src/jacobians.cpp
-  src/jacobians_t_p.cpp
-  src/jacobians_t.cpp
   src/matrix_c.cpp
   src/matrix_g.cpp
   src/matrix_m.cpp
   src/matrix_th.cpp
   src/matrix_yr.cpp
   src/kinematics.cpp
-  src/inverse_kinematics.cpp
 )
 
 ## Add cmake target dependencies of the library

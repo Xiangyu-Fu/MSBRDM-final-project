@@ -118,7 +118,8 @@ namespace ur
 
     cc::HomogeneousTransformation T_ef_0(const cc::JointPosition &q) const;
     cc::HomogeneousTransformation T_j_0(const cc::JointPosition &q, int j) const;
-
+    cc::HomogeneousTransformation T_cm_j_0(const cc::JointPosition &q, int j) const;
+    
     cc::Jacobian J_ef_0(const cc::JointPosition &q) const;
     cc::Jacobian J_j_0(const cc::JointPosition &q, int j) const;
     cc::Jacobian Jcm_j_0(const cc::JointPosition &q, int j) const;
