@@ -6,7 +6,7 @@
 
 using namespace ur;
 
-void URModel::matrix_th(Parameters &th) const
+void URModel::matrix_th(Parameters &Theta) const
 {
 Theta(0,0) = 4*I622 - 4*I611;
 Theta(1,0) = 8*I612;

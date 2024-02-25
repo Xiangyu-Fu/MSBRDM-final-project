@@ -6,16 +6,17 @@ syms L1 L2 L3 real
 syms m1 m2 m3 real
 
 % currentElement = (L2^2*m3)/2 + qpp1r*(L3^2+L1) + qp1r*q1 + cos(q1)^2 
-currentElement = (L2^2*m3)/2 
+currentElement = (L2^2*m3)/2 + qp1^2*q1
 
 currentElement = char(currentElement);
 
 % currentElement = replaceCosSin(currentElement);
 currentElement = replaceIndexedTerms(currentElement);
+currentElement = replacePowerOperation(currentElement);
 currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
 currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
 currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
-currentElement = replacePowerOperation(currentElement);
+% currentElement = replacePowerOperation(currentElement);
 
 currentElement
 

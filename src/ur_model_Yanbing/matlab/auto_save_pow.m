@@ -131,10 +131,11 @@ currentElement = char(currentElement);
 
 % currentElement = replaceCosSin(currentElement);
 currentElement = replaceIndexedTerms(currentElement);
+currentElement = replacePowerOperation(currentElement);
 currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
 currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
 currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
-currentElement = replacePowerOperation(currentElement);
+% currentElement = replacePowerOperation(currentElement);
 
 currentElement
 
@@ -201,15 +202,16 @@ function save_matrix(matrix, matrixName, fileName, folderPath, skipZeros)
             currentElement = matrix(i, j);
             currentElement = char(currentElement);
 
-            % 新增替换逻辑
+            % cos, sin
             [currentElement, cosSinDeclarations] = replaceCosSin(currentElement, cosSinDeclarations);
 
-            % 其余处理保持不变
             currentElement = replaceIndexedTerms(currentElement);
+            currentElement = replacePowerOperation(currentElement);
             currentElement = replacePattern(currentElement, 'q(\d+)', 'q');
             currentElement = replacePattern(currentElement, 'qp(\d+)', 'qp');
             currentElement = replacePattern(currentElement, 'qpp(\d+)', 'qpp');
-            currentElement = replacePowerOperation(currentElement);
+            % currentElement = replacePowerOperation(currentElement);
+            
             
             if skipZeros && strcmp(currentElement, '0')
                 continue;
