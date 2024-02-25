@@ -162,27 +162,27 @@ namespace ur
     /** 
     * @brief robot base wrt fixed base
     */
-    cc::HomogeneousTransformation T_0_B() const;
+    // cc::HomogeneousTransformation T_0_B() const;
 
     /** 
     * @brief fixed base wrt to robot base
     */
-    cc::HomogeneousTransformation T_B_0() const;
+    // cc::HomogeneousTransformation T_B_0() const;
 
     /**
      * @brief Tool wrt ef
      */
-    cc::HomogeneousTransformation T_Tool_Ef() const;
+    // cc::HomogeneousTransformation T_Tool_Ef() const;
 
     /** 
     * @brief gravity vector wrt word
     */
-    cc::LinearPosition g_B() const;
+    // cc::LinearPosition g_B() const;
 
     /** 
     * @brief gravity vector wrt base
     */
-    cc::LinearPosition g_0() const;
+    // cc::LinearPosition g_0() const;
 
     /** 
     * @brief endeffector transformation matrix
@@ -192,17 +192,17 @@ namespace ur
     /** 
     * @brief endeffector transformation matrix wrt to robot base frame
     */
-    cc::HomogeneousTransformation T_ef_B(const cc::JointPosition &q) const;
+    // cc::HomogeneousTransformation T_ef_B(const cc::JointPosition &q) const;
 
     /** 
     * @brief tool transformation matrix
     */
-    cc::HomogeneousTransformation T_tool_0(const cc::JointPosition &q) const;
+    // cc::HomogeneousTransformation T_tool_0(const cc::JointPosition &q) const;
 
     /** 
     * @brief endeffector transformation matrix wrt to robot base frame
     */
-    cc::HomogeneousTransformation T_tool_B(const cc::JointPosition &q) const;
+    // cc::HomogeneousTransformation T_tool_B(const cc::JointPosition &q) const;
 
     /** 
     * @brief transformation matrix j-th joint wrt to robot base frame
@@ -226,7 +226,7 @@ namespace ur
     /** 
     * @brief endeffector jacobian matrix wrt to robot base frame
     */
-    cc::Jacobian J_tool_0(const cc::JointPosition &q) const;
+    // cc::Jacobian J_tool_0(const cc::JointPosition &q) const;
 
     /** 
     * @brief jacobian matrix at j-th joint wrt to robot base frame
@@ -240,7 +240,7 @@ namespace ur
     * 
     * Joint index j in range: 0-5
     */
-    cc::Jacobian Jt_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
+    // cc::Jacobian Jt_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
 
     /** 
     * @brief jacobian matrix at j-th center of mass wrt to robot base frame
@@ -254,7 +254,7 @@ namespace ur
     * 
     * Joint index j in range: 0-5
     */
-    cc::Jacobian Jtcm_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
+    // cc::Jacobian Jtcm_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, int j) const;
 
     /** 
     * @brief endeffector jacobian derivative wrt robot base frame 
@@ -264,7 +264,7 @@ namespace ur
     /** 
     * @brief tool jacobian derivative wrt robot base frame 
     */
-    cc::Jacobian Jp_tool_0(const cc::JointPosition &q, const cc::JointVelocity &qP) const;
+    // cc::Jacobian Jp_tool_0(const cc::JointPosition &q, const cc::JointVelocity &qP) const;
 
     /** 
     * @brief jacobian derivative at j-th joint wrt robot base frame 
@@ -278,7 +278,7 @@ namespace ur
     * 
     * Joint index j in range: 0-5
     */
-    cc::Jacobian Jtp_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
+    // cc::Jacobian Jtp_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
 
     /** 
     * @brief jacobian derivative at j-th center of mass wrt robot base frame 
@@ -292,7 +292,7 @@ namespace ur
     * 
     * Joint index j in range: 0-5
     */
-    cc::Jacobian Jtpcm_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
+    // cc::Jacobian Jtpcm_j_0(const cc::LinearPosition &tj, const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
 
     /**
      * @brief return lower joint limits of j-th joint
@@ -316,27 +316,27 @@ namespace ur
     /**
      * @brief Get base Frame name
      */
-    std::string getBaseFrame() const;
+    // std::string getBaseFrame() const;
 
     /**
      * @brief Get base Frame name
      */
-    std::string get0Frame() const;
+    // std::string get0Frame() const;
 
     /**
      * @brief Get the Tool Frame name
      */
-    std::string getToolFrame() const;
+    // std::string getToolFrame() const;
 
     /**
      * @brief Get the DH Frame name
      */
-    std::string getDHFrame_j(int j) const;
+    // std::string getDHFrame_j(int j) const;
 
     /**
      * @brief broad cast frames in tf tree
      */
-    void broadcastFrames(const cc::JointPosition &q, const ros::Time &time);
+    // void broadcastFrames(const cc::JointPosition &q, const ros::Time &time);
 
   protected:
     /**
