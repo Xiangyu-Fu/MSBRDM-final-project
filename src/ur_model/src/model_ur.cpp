@@ -238,45 +238,6 @@ namespace ur
   }
 
 
-  cc::Scalar URModel::lowerJointLimits_j(int j) const
-  {
-    switch (j)
-    {
-    case 0:
-      return lo_jl1;
-    case 1:
-      return lo_jl2;
-    case 2:
-      return lo_jl3;
-    case 3:
-      return lo_jl4;
-    case 4:
-      return lo_jl5;
-    case 5:
-      return lo_jl6;
-    }
-    return -std::numeric_limits<cc::Scalar>::infinity();
-  }
-
-  cc::Scalar URModel::upperJointLimits_j(int j) const
-  {
-    switch (j)
-    {
-    case 0:
-      return hi_jl1;
-    case 1:
-      return hi_jl2;
-    case 2:
-      return hi_jl3;
-    case 3:
-      return hi_jl4;
-    case 4:
-      return hi_jl5;
-    case 5:
-      return hi_jl6;
-    }
-    return std::numeric_limits<cc::Scalar>::infinity();
-  }
 
   bool URModel::init(ros::NodeHandle &nh)
   {
@@ -349,40 +310,8 @@ namespace ur
     cc::load(ns+"gx", gx);
     cc::load(ns+"gy", gy);
     cc::load(ns+"gz", gz);
-    // g_b_ << gx, gy, gz;
 
-    // std::cout << "g_b_: " << g_b_ << std::endl;
-
-    // cc::load(ns+"robot_0_frame", robot_0_frame_);
-    // cc::load(ns+"base_frame", base_frame_);
-    // cc::load(ns+"tool_frame", tool_frame_);
-
-    // cc::CartesianPosition X_0_b;
-    // cc::load(ns+"X_0_B", X_0_b);
-    // T_0_b_ = X_0_b;
-    // T_b_0_ = T_0_b_.inverse();
-
-    // cc::CartesianPosition X_tool_ef;
-    // cc::load(ns+"X_Tool_Ef", X_tool_ef);
-    // T_tool_ef_ = X_tool_ef;
-
-    // // gravity wrt base
-    // g_0_ = T_0_b_.orientation().inverse() * g_b_;
-
-    // set inital guess theta
     matrix_th(theta_);
-
-    // setup frames
-    // tf_stamped_transform_.resize(CC_ROBOT_DOF + 2);
-    // for (size_t i = 0; i < CC_ROBOT_DOF; ++i)
-    // {
-    //   tf_stamped_transform_[i].frame_id_ = base_frame_;
-    //   tf_stamped_transform_[i].child_frame_id_ = Base::name() + "_dh_" + std::to_string(i);
-    // }
-    // // tf_stamped_transform_[CC_ROBOT_DOF].frame_id_ = base_frame_;
-    // // tf_stamped_transform_[CC_ROBOT_DOF].child_frame_id_ = Base::name() + "_dh_tool";
-    // tf_stamped_transform_[CC_ROBOT_DOF+1].frame_id_ = base_frame_;
-    // tf_stamped_transform_[CC_ROBOT_DOF+1].child_frame_id_ = Base::name() + "_0";
 
     return true;
   }

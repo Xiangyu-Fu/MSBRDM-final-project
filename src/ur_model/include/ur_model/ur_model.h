@@ -78,29 +78,6 @@ namespace ur
     // gravity components
     cc::Scalar gx, gy, gz;
 
-    // joint limits
-    cc::Scalar lo_jl1, lo_jl2, lo_jl3, lo_jl4, lo_jl5, lo_jl6;
-    cc::Scalar hi_jl1, hi_jl2, hi_jl3, hi_jl4, hi_jl5, hi_jl6;
-
-    // // gravity vectors
-    // cc::LinearPosition g_b_, g_0_;
-
-    // // base to world transformation
-    // cc::HomogeneousTransformation T_0_b_;
-    // cc::HomogeneousTransformation T_b_0_;
-
-    // // tool to ef transformation
-    // cc::HomogeneousTransformation T_tool_ef_;
-
-    // // frames
-    // std::string robot_0_frame_; // 0 frame tf name
-    // std::string base_frame_;    // base frame tf name
-    // std::string tool_frame_;    // tool frame tf name
-
-    // // broadcast frames
-    // tf::TransformBroadcaster br_;
-    // std::vector<tf::StampedTransform> tf_stamped_transform_; // stack of tf transformations
-
   public:
 
     URModel(const std::string &name = "ur_model");
@@ -119,7 +96,7 @@ namespace ur
     cc::HomogeneousTransformation T_ef_0(const cc::JointPosition &q) const;
     cc::HomogeneousTransformation T_j_0(const cc::JointPosition &q, int j) const;
     cc::HomogeneousTransformation T_cm_j_0(const cc::JointPosition &q, int j) const;
-    
+
     cc::Jacobian J_ef_0(const cc::JointPosition &q) const;
     cc::Jacobian J_j_0(const cc::JointPosition &q, int j) const;
     cc::Jacobian Jcm_j_0(const cc::JointPosition &q, int j) const;
@@ -127,8 +104,6 @@ namespace ur
     cc::Jacobian Jp_j_0(const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
     cc::Jacobian Jpcm_j_0(const cc::JointPosition &q, const cc::JointVelocity &qP, int j) const;
 
-    cc::Scalar lowerJointLimits_j(int j) const;
-    cc::Scalar upperJointLimits_j(int j) const;
 
 
   protected:
