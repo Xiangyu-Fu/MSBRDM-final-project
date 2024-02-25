@@ -76,6 +76,7 @@ namespace tum_ics_ur_robot_lli
       // params for Regressor
       VectorXd theta_;
       double gamma_; 
+      Vector6d springK_;
       
     public:
       ImpedanceControl(double weight = 1.0, const QString &name = "ImpedanceControl");
@@ -102,6 +103,8 @@ namespace tum_ics_ur_robot_lli
       Vector6d update(const RobotTime &time, const JointState &state);
 
       cc::CartesianState genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period);
+
+      Vector6d computeImpedanceTau(const JointState &state, const Vector3d& X_red_ , const int j);
 
       bool stop();
     };

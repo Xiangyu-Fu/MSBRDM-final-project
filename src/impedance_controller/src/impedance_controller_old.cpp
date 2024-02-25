@@ -403,7 +403,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq + Yr * theta_;
+        tau = -Kd_ * Sq + Yr * theta_;;
         return tau;
       }
 
@@ -461,17 +461,7 @@ namespace tum_ics_ur_robot_lli
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        Vector6d tau_tracking = -Kd_cart_ * Sq + Yr * theta_;
-
-        // Get the nullspace stuff 
-        Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-        auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);
-        auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-        Vector6d task2 = Null_sp * tauTotalAvoid;
-
-        Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
-
-        tau = tau_tracking + tau_avoiding;
+        tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
       }
@@ -536,42 +526,5 @@ namespace tum_ics_ur_robot_lli
     {
       return true;
     }
-
-    Vector6d ImpedanceControl::computeImpedanceTau(const JointState& state, const Vector3d& X_red_, const int j)
-    {
-      // See if the ball is by the robot before activate the avoidance  
-      cc::HomogeneousTransformation T_i_0;
-      Vector3d F_red_i;
-      Vector6d tau_red_i;
-      double d;
-      double d_min = 10e-5;
-      T_i_0 = model_.T_j_0(state.q, j);
-      d = (X_red_ - T_i_0.position()).norm();  
-      ROS_INFO_STREAM( " Distance Ball from joint j " << j << "  " << d);
-      if(d < d_min)
-        d = d_min;
-
-      // if the ball is within the detection zone 
-      Vector3d current_spingK; 
-      // current_spingK << springK_[j] ,springK_[j] ,springK_[j] ; 
-      double SPRING = springK_[0]; // * 10e10;
-
-      current_spingK << SPRING, SPRING,SPRING;
-      if(d < 0.5)
-      {
-        F_red_i.x() = current_spingK.x() /  (X_red_ - T_i_0.position()).x();
-        F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
-        F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
-
-        tau_red_i = model_.J_j_0(state.q,j).block(0, 0, 2, 5).transpose() * F_red_i;
-      }
-      else    // else we can set everything to zero 
-          tau_red_i.setZero(); 
-        
-      ROS_INFO_STREAM("Tau Avoidance joint i " << tau_red_i.transpose());
-
-      return tau_red_i;
-    }
-
   } // namespace RobotControllers
 } // namespace tum_ics_ur_robot_lli
