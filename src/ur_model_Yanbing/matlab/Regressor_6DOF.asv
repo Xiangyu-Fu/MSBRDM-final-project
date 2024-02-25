@@ -34,60 +34,62 @@ f = [cos(q) sin(q)];
 
 tau = expand(tau);
 
+load('Theta.mat');
+load('Y.mat');
 
-Theta = [];
-Y = [];
-
-for num_link = 1:n
-    y = [];
-    theta = [];
-    [theta_qpp, y_qpp] = coeffs(tau(num_link), qpp);
-    for i = 1:length(y_qpp)
-        c_qpp = y_qpp(i);
-        [theta_qp, y_qp] = coeffs(theta_qpp(i), qp);
-        for j = 1:length(y_qp)
-            c_qp = y_qp(j);
-            [theta_q, y_q] = coeffs(theta_qp(j), f);
-            c_qp = c_qp * y_q;
-
-            % update for current n
-            theta = [theta; theta_q'];
-            y = [y c_qpp * c_qp];
-        end
-    end
-    Theta = [Theta; theta];
-    y_new = sym(zeros(n, length(y)));
-    y_new(num_link, :) = y;
-    Y = [Y y_new];
-end
-
-% Simplify
-n = length(Theta);
-i = 1;
-while i <= n
-    j = i + 1;
-    while j <= n
-        r = symvar(simplify(Theta(i) / Theta(j)));
-        if isempty(r)
-            c = double(simplify(Theta(i) / Theta(j)));
-            Theta(j) = [];
-
-            Y(:, i) = Y(:, i) + 1/c * Y(:, j); 
-            Y(:, j) = [];
-
-            n = length(Theta);
-        else
-            j = j + 1;
-        end
-    end
-    i = i + 1;
-end
-
-Theta
-Y
+% Theta = [];
+% Y = [];
+% 
+% for num_link = 1:n
+%     y = [];
+%     theta = [];
+%     [theta_qpp, y_qpp] = coeffs(tau(num_link), qpp);
+%     for i = 1:length(y_qpp)
+%         c_qpp = y_qpp(i);
+%         [theta_qp, y_qp] = coeffs(theta_qpp(i), qp);
+%         for j = 1:length(y_qp)
+%             c_qp = y_qp(j);
+%             [theta_q, y_q] = coeffs(theta_qp(j), f);
+%             c_qp = c_qp * y_q;
+% 
+%             % update for current n
+%             theta = [theta; theta_q'];
+%             y = [y c_qpp * c_qp];
+%         end
+%     end
+%     Theta = [Theta; theta];
+%     y_new = sym(zeros(n, length(y)));
+%     y_new(num_link, :) = y;
+%     Y = [Y y_new];
+% end
+% 
+% % Simplify
+% n = length(Theta);
+% i = 1;
+% while i <= n
+%     j = i + 1;
+%     while j <= n
+%         r = symvar(simplify(Theta(i) / Theta(j)));
+%         if isempty(r)
+%             c = double(simplify(Theta(i) / Theta(j)));
+%             Theta(j) = [];
+% 
+%             Y(:, i) = Y(:, i) + 1/c * Y(:, j); 
+%             Y(:, j) = [];
+% 
+%             n = length(Theta);
+%         else
+%             j = j + 1;
+%         end
+%     end
+%     i = i + 1;
+% end
+% 
+% Theta
+% Y
 
 %% Check 
-simplify(Y*Theta - tau)
+% simplify(Y*Theta - tau)
 
 load('Y.mat');
 syms qp1r qp2r qp3r qp4r qp5r qp6r real
@@ -96,6 +98,8 @@ Yr = subs(Y, [qpp1 qpp2 qpp3 qpp4 qpp5 qpp6], [qpp1r qpp2r qpp3r qpp4r qpp5r qpp
 Yr = simplify(subs(Yr, [qp1^2 qp2^2 qp3^2 qp4^2 qp5^2 qp6^2], [qp1*qp1r qp2*qp2r qp3*qp3r qp4*qp4r qp5*qp5r qp6*qp6r]));
 % Yr = subs(Yr, [qp1*qp2 qp2*qp3 qp1*qp3], [0.5*qp1*qp2r+0.5*qp1r*qp2 0.5*qp2*qp3r+0.5*qp2r*qp3 0.5*qp1*qp3r+0.5*qp1r*qp3]);
 
+% qp = sym('qp', [1 6]);
+% qp_r = sym('qp', [1 6], 'r');
 for i = 1:length(qp)
     for j = 1:length(qp)
         if i ~= j
@@ -113,6 +117,3 @@ end
 Yr
 
 
-save('Theta.mat', 'Theta');
-save('Y.mat', 'Y');
-save('Yr.mat', 'Yr');
