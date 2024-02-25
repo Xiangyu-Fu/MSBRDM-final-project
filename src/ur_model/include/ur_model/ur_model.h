@@ -93,8 +93,8 @@ namespace ur_model_namespace
         /// Update(used [private] funciton) & Return
         ////////////////////////////////
         const cc::MatrixDof &Inertia_Matrix(const cc::JointPosition &q);
-        const cc::MatrixDof &Coriolis_Matrix(const cc::JointPosition &q);
-        const cc::MatrixDof &Gravity_Matrix(const cc::JointPosition &q);
+        const cc::MatrixDof &Coriolis_Matrix(const cc::JointPosition &q, const cc::JointVelocity &qp);
+        const cc::VectorDof &Gravity_Matrix(const cc::JointPosition &q);
         
         ////////////////////////////////
         /// Yr, Theta caculet
@@ -118,13 +118,13 @@ namespace ur_model_namespace
         //                  Jdot_i_0 & Jdot_cmi_0, i=1...6
         ////////////////////////////////
         cc::Jacobian Jef_0(const cc::JointPosition &q) const;
-        cc::Jacobian Jef_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qP) const;
+        cc::Jacobian Jef_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qp) const;
 
-        cc::Jacobian Ji_0(const cc::JointPosition &q, int j) const;
-        cc::Jacobian Jcmi_0(const cc::JointPosition &q, int j) const;
+        cc::Jacobian Ji_0(const cc::JointPosition &q, int i) const;
+        cc::Jacobian Jcmi_0(const cc::JointPosition &q, int i) const;
 
-        cc::Jacobian Ji_0_dot(const cc::JointPosition &q, int j) const;
-        cc::Jacobian Jcmi_0_dot(const cc::JointPosition &q, int j) const;
+        cc::Jacobian Ji_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qp, int i) const;
+        cc::Jacobian Jcmi_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qp, int i) const;
 
 
     private:

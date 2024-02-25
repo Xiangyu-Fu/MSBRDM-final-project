@@ -13,9 +13,9 @@ namespace ur_model_namespace
 
     URModel::URModel(const std::string &name): 
         Base(name), 
-        M_(Eigen::Matrix6d::Zero()),
-        C_(Eigen::Matrix6d::Zero()),
-        G_(Eigen::Vector6D::Zero()),
+        M_(cc::MatrixDof::Zero()),
+        C_(cc::MatrixDof::Zero()),
+        G_(cc::VectorDof::Zero()),
         Theta_(61, 1),  // 正确的使用 setZero() 函数
         Yr_(6, 61)  
     {
@@ -68,21 +68,21 @@ namespace ur_model_namespace
     /// M, C, G
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    const cc::MatrixDof &URModel::Mass_Matrix(const cc::JointPosition &q)
+    const cc::MatrixDof &URModel::Inertia_Matrix(const cc::JointPosition &q)
     {
         // Update M & Return
         caculet_M(M_, q);
         return M_;
     }
 
-    const cc::MatrixDof &URModel::Coriolis_Matrix(const cc::JointPosition &q)
+    const cc::MatrixDof &URModel::Coriolis_Matrix(const cc::JointPosition &q, const cc::JointVelocity &qp)
     {
         // Update M & Return
-        caculet_C(C_, q);
+        caculet_C(C_, q, qp);
         return C_;
     }
 
-    const cc::MatrixDof &URModel::Gravity_Matrix(const cc::JointPosition &q)
+    const cc::VectorDof &URModel::Gravity_Matrix(const cc::JointPosition &q)
     {
         // Update M & Return
         caculet_G(G_, q);
@@ -101,7 +101,7 @@ namespace ur_model_namespace
     const URModel::Regressor_Yr &URModel::Yr_function(const cc::JointPosition &q, 
                                             const cc::JointVelocity &qp, 
                                             const cc::JointVelocity &qrp, 
-                                            const cc::JointAcceleration &qrpp);
+                                            const cc::JointAcceleration &qrpp)
     {
         caculet_Yr(Yr_, q, qp, qrp, qrpp);
         return Yr_;
@@ -128,11 +128,11 @@ namespace ur_model_namespace
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_T3_0(T, q); },
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_T4_0(T, q); },
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_T5_0(T, q); },
-            [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_T6_0(T, q); },
+            [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_T6_0(T, q); }
         };
 
         if (i >= 0 && i < matrixTFunctions.size()) {
-            matrixTcmFunctions[i](T, q);
+            matrixTFunctions[i](T, q);
         } else {
             throw std::out_of_range("Index i is out of range for Ti_0");
         }
@@ -151,11 +151,11 @@ namespace ur_model_namespace
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_Tcm3_0(T, q); },
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_Tcm4_0(T, q); },
             [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_Tcm5_0(T, q); },
-            [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_Tcm6_0(T, q); },
+            [this](cc::HomogeneousTransformation &T, const cc::JointPosition &q) { caculet_Tcm6_0(T, q); }
         };
 
         if (i >= 0 && i < matrixTFunctions.size()) {
-            matrixTcmFunctions[i](T, q);
+            matrixTFunctions[i](T, q);
         } else {
             throw std::out_of_range("Index i is out of range for Tcmi_0");
         }
@@ -182,22 +182,21 @@ namespace ur_model_namespace
     }
 
 
-    cc::HomogeneousTransformation URModel::Ji_0(const cc::JointPosition &q, 
-                                    int i) const
+    cc::Jacobian URModel::Ji_0(const cc::JointPosition &q, int i) const
     {
         cc::Jacobian J = cc::Jacobian::Zero();
         
-        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> calculateJFunctions = {
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J1_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J2_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J3_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J4_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J5_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_J6_0(J, q); },
+        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> caculetJFunctions = {
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J1_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J2_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J3_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J4_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J5_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_J6_0(J, q); }
         };
 
-        if (i >= 0 && i < calculateJcmFunctions.size()) {
-            calculateJFunctions[i](J, q);
+        if (i >= 0 && i < caculetJFunctions.size()) {
+            caculetJFunctions[i](J, q);
         } else {
             throw std::out_of_range("Index i is out of range for Ji_0");
         }
@@ -205,22 +204,22 @@ namespace ur_model_namespace
         return J;
     }
 
-    cc::HomogeneousTransformation URModel::Jcmi_0(const cc::JointPosition &q, 
+    cc::Jacobian URModel::Jcmi_0(const cc::JointPosition &q, 
                                         int i) const
     {
         cc::Jacobian J = cc::Jacobian::Zero();
         
-        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> calculateJFunctions = {
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm1_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm2_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm3_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm4_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm5_0(J, q); },
-            [this](cc::Jacobian &J, const cc::JointPosition &q) { calculat_Jcm6_0(J, q); },
+        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> caculetJFunctions = {
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm1_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm2_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm3_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm4_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm5_0(J, q); },
+            [this](cc::Jacobian &J, const cc::JointPosition &q) { caculet_Jcm6_0(J, q); }
         };
 
-        if (i >= 0 && i < calculateJFunctions.size()) {
-            calculateJcmFunctions[i](J, q);
+        if (i >= 0 && i < caculetJFunctions.size()) {
+            caculetJFunctions[i](J, q);
         } else {
             throw std::out_of_range("Index i is out of range for Ji_0");
         }
@@ -229,22 +228,21 @@ namespace ur_model_namespace
     }
 
     ////////////////////////////////
-    cc::HomogeneousTransformation URModel::Ji_0_dot(const cc::JointPosition &q, 
-                                    int i) const
+    cc::Jacobian URModel::Ji_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qp, int i) const 
     {
         cc::Jacobian J_dot = cc::Jacobian::Zero();
         
-        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> calculateJdotFunctions = {
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J1_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J2_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J3_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J4_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J5_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_J6_0_dot(J_dot, q); },
+        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>, 6> caculetJdotFunctions = {
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J1_0_dot(J_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J2_0_dot(J_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J3_0_dot(J_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J4_0_dot(J_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J5_0_dot(J_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &J_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_J6_0_dot(J_dot, q, qp); }},
         };
 
-        if (i >= 0 && i < calculateJdotFunctions.size()) {
-            calculateJcmFunctions[i](J_dot, q);
+        if (i >= 0 && i < caculetJdotFunctions.size()) {
+            caculetJdotFunctions[i](J_dot, q, qp);
         } else {
             throw std::out_of_range("Index i is out of range for Ji_0_dot");
         }
@@ -252,27 +250,27 @@ namespace ur_model_namespace
         return J_dot;
     }
 
-    cc::HomogeneousTransformation URModel::Jcmi_0_dot(const cc::JointPosition &q, 
-                                    int i) const
+
+    cc::Jacobian URModel::Jcmi_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qp, int i) const 
     {
-        cc::Jacobian J_dot = cc::Jacobian::Zero();
+        cc::Jacobian Jcm_dot = cc::Jacobian::Zero();
         
-        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&)>, 6> calculateJdotFunctions = {
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm1_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm2_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm3_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm4_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm5_0_dot(J_dot, q); },
-            [this](cc::Jacobian &J_dot, const cc::JointPosition &q) { calculat_Jcm6_0_dot(J_dot, q); },
+        std::array<std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>, 6> caculetJcmdotFunctions = {
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm1_0_dot(Jcm_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm2_0_dot(Jcm_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm3_0_dot(Jcm_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm4_0_dot(Jcm_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm5_0_dot(Jcm_dot, q, qp); }},
+            std::function<void(cc::Jacobian&, const cc::JointPosition&, const cc::JointVelocity&)>{[this](cc::Jacobian &Jcm_dot, const cc::JointPosition &q, const cc::JointVelocity &qp) { caculet_Jcm6_0_dot(Jcm_dot, q, qp); }}
         };
 
-        if (i >= 0 && i < calculateJdotFunctions.size()) {
-            calculateJcmFunctions[i](J_dot, q);
+        if (i >= 0 && i < caculetJcmdotFunctions.size()) {
+            caculetJcmdotFunctions[i](Jcm_dot, q, qp);
         } else {
             throw std::out_of_range("Index i is out of range for Jcmi_0_dot");
         }
 
-        return J_dot;
+        return Jcm_dot;
     }
 
 

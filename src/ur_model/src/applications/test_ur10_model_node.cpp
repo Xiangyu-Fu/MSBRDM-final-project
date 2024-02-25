@@ -26,25 +26,25 @@ int main(int argc, char **argv)
   qrpp.setZero();
   
   // Initalize the robot regressor matrix
-  ur_model_namespace::URModel::Regressor Y = model.Regressor_Yr(q, qp, qrp, qrpp);
+  ur_model_namespace::URModel::Regressor_Yr Yr = model.Yr_function(q, qp, qrp, qrpp);
   
   // Initalize the robots parameter vector
-  ur_model_namespace::URModel::Parameters th = model.Regressor_Theta(); 
+  ur_model_namespace::URModel::Regressor_Theta Theta = model.Theta_function(); 
 
   // get the end-effector transformation wrt 0 frame
-  Eigen::Affine3d T_ef_0 = model.Tef_0(q);
+  Eigen::Affine3d Tef_0 = model.Tef_0(q);
 
   // get the end-effector jacobain wrt 0 frame
-  Eigen::Matrix<double,6,6> J_ef_0 = model.Jef_0(q);
+  Eigen::Matrix<double,6,6> Jef_0 = model.Jef_0(q);
 
   //----------------------------------------------------------------------------
   // print some stuff
 
   ROS_WARN_STREAM("q=\n" << q.transpose() << "\n");
-  ROS_WARN_STREAM("T_ef_0=\n" << T_ef_0.matrix() << "\n");
-  ROS_WARN_STREAM("J_ef_0=\n" << J_ef_0 << "\n");
-  ROS_WARN_STREAM("th=\n" << th.transpose() << "\n");
-  ROS_WARN_STREAM("Y=\n" << Y << "\n");
+  ROS_WARN_STREAM("Tef_0=\n" << Tef_0.matrix() << "\n");
+  ROS_WARN_STREAM("Jef_0=\n" << Jef_0 << "\n");
+  ROS_WARN_STREAM("Theta=\n" << Theta.transpose() << "\n");
+  ROS_WARN_STREAM("Yr=\n" << Yr << "\n");
 
   return 0;
 }

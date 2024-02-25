@@ -186,7 +186,7 @@ namespace tum_ics_ur_robot_lli
         m_error = true;
         return false;  
       }
-      theta_ = model_.Regressor_Theta();
+      theta_ = model_.Theta_function();
 
       ros::param::get(ns_ + "/learning_rate", gamma_);
       if (!(gamma_ > 0))
@@ -293,7 +293,7 @@ namespace tum_ics_ur_robot_lli
         is_first_iter_ = false;
 
         // Init model
-        theta_ = model_.Regressor_Theta();
+        theta_ = model_.Theta_function();
 
         // Init error
         joint_error_ = Vector6d::Zero();
@@ -366,7 +366,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
         // Compute regressor for cartesian control
-        const auto& Yr = model_.Regressor_Yr(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_ * Sq + Yr * theta_;
         return tau;
@@ -401,7 +401,7 @@ namespace tum_ics_ur_robot_lli
         q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
         q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
         // torque
-        const auto& Yr = model_.Regressor_Yr(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
         tau = -Kd_ * Sq + Yr * theta_;;
         return tau;
@@ -459,7 +459,7 @@ namespace tum_ics_ur_robot_lli
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
         Vector6d Sq = state.qp - Qrp;
-        const auto& Yr = model_.Regressor_Yr(state.q, state.qp, Qrp, Qrpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
