@@ -1,7 +1,6 @@
 #include <impedance_controller/impedance_controller.h>
 #include <tum_ics_ur_robot_msgs/ControlData.h>
-#include <sensor_msgs/JointState.h>
-#include <geometry_msgs/PoseStamped.h>
+
 
 namespace tum_ics_ur_robot_lli
 {
@@ -27,8 +26,6 @@ namespace tum_ics_ur_robot_lli
       model_("ur10_model")
     {
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
-      joint_state_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
-      ee_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("end_effector_pose", 1);
 
       // Start two Services
       move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
@@ -317,30 +314,6 @@ namespace tum_ics_ur_robot_lli
       joint_state_ = state;
       auto X_ee = model_.T_ef_0(state.q);
 
-      // publish  data
-      {
-        // publish joint state
-        sensor_msgs::JointState joint_state_msg;
-        joint_state_msg.header.stamp = ros::Time::now();
-        joint_state_msg.name = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
-        joint_state_msg.position = {state.q(0), state.q(1), state.q(2), state.q(3), state.q(4), state.q(5)};
-        joint_state_pub_.publish(joint_state_msg);
-
-        // publish ee pose
-        geometry_msgs::PoseStamped ee_pose_msg;
-        ee_pose_msg.header.stamp = ros::Time::now();
-        ee_pose_msg.pose.position.x = X_ee.translation()(0);
-        ee_pose_msg.pose.position.y = X_ee.translation()(1);
-        ee_pose_msg.pose.position.z = X_ee.translation()(2);
-        ee_pose_msg.pose.orientation.x = X_ee.rotation().x();
-        ee_pose_msg.pose.orientation.y = X_ee.rotation().y();
-        ee_pose_msg.pose.orientation.z = X_ee.rotation().z();
-        ee_pose_msg.pose.orientation.w = X_ee.rotation().w();
-        ee_pose_pub_.publish(ee_pose_msg);
-      }
-
-
-
       if(control_mode_ != CARTESIAN)
       {
         ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
@@ -362,6 +335,7 @@ namespace tum_ics_ur_robot_lli
 
       //////////////////////////////
       // INIT MODE
+      // FIXME: add gravity compensation
       //////////////////////////////
       if(control_mode_ == INIT)
       {
@@ -429,7 +403,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq + Yr * theta_;
+        tau = -Kd_ * Sq + Yr * theta_;;
         return tau;
       }
 
@@ -487,17 +461,7 @@ namespace tum_ics_ur_robot_lli
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        Vector6d tau_tracking = -Kd_cart_ * Sq + Yr * theta_;
-
-        // Get the nullspace stuff 
-        Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-        auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);
-        auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-        Vector6d task2 = Null_sp * tauTotalAvoid;
-
-        Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
-
-        tau = tau_tracking + tau_avoiding;
+        tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
       }
@@ -562,42 +526,5 @@ namespace tum_ics_ur_robot_lli
     {
       return true;
     }
-
-    Vector6d ImpedanceControl::computeImpedanceTau(const JointState& state, const Vector3d& X_red_, const int j)
-    {
-      // See if the ball is by the robot before activate the avoidance  
-      cc::HomogeneousTransformation T_i_0;
-      Vector3d F_red_i;
-      Vector6d tau_red_i;
-      double d;
-      double d_min = 10e-5;
-      T_i_0 = model_.T_j_0(state.q, j);
-      d = (X_red_ - T_i_0.position()).norm();  
-      ROS_INFO_STREAM( " Distance Ball from joint j " << j << "  " << d);
-      if(d < d_min)
-        d = d_min;
-
-      // if the ball is within the detection zone 
-      Vector3d current_spingK; 
-      // current_spingK << springK_[j] ,springK_[j] ,springK_[j] ; 
-      double SPRING = springK_[0]; // * 10e10;
-
-      current_spingK << SPRING, SPRING,SPRING;
-      if(d < 0.5)
-      {
-        F_red_i.x() = current_spingK.x() /  (X_red_ - T_i_0.position()).x();
-        F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
-        F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
-
-        tau_red_i = model_.J_j_0(state.q,j).block(0, 0, 2, 5).transpose() * F_red_i;
-      }
-      else    // else we can set everything to zero 
-          tau_red_i.setZero(); 
-        
-      ROS_INFO_STREAM("Tau Avoidance joint i " << tau_red_i.transpose());
-
-      return tau_red_i;
-    }
-
   } // namespace RobotControllers
 } // namespace tum_ics_ur_robot_lli

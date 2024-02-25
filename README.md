@@ -64,8 +64,7 @@ roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
 ## Force Torque Sensor
 
 ```bash
-
-roslaunch tum_ics_ur10_bringup bringUR10.launch
+roslaunch tum_ics_schunk_netbox sensor_publisher.launch
 rostopic echo /schunk_netbox/raw 
 header: 
   seq: 27494

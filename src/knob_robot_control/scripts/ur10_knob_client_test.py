@@ -2,6 +2,23 @@
 import rospy
 from impedance_controller.srv import MoveArmCartesian, MoveArmJoint
 import math
+import numpy as np
+from geometry_msgs.msg import WrenchStamped
+
+# global variable
+force_torque_matrix = np.zeros((6, 1))
+
+def FT_callback(data):
+    global force_torque_matrix
+    force_torque_matrix[0] = data.wrench.force.x
+    force_torque_matrix[1] = data.wrench.force.y
+    force_torque_matrix[2] = data.wrench.force.z
+    force_torque_matrix[3] = data.wrench.torque.x
+    force_torque_matrix[4] = data.wrench.torque.y
+    force_torque_matrix[5] = data.wrench.torque.z
+
+def FT_listener():
+    rospy.Subscriber("/schunk_netbox/raw", WrenchStamped, FT_callback)
 
 
 def move_arm_cartesian_client(x, y, z, rx, ry, rz):
@@ -24,7 +41,9 @@ def move_arm_joint_client(joint0, joint1, joint2, joint3, joint4, joint5):
 
 if __name__ == "__main__":
     rospy.init_node('arm_control_client')
-    
+
+    FT_listener()
+
     # # Example call to moveArmCartesian service
     # response_cartesian = move_arm_cartesian_client(0.1, 0.2, 0.3, 0.1, 0.2, 0.3)
     traget_pos = [0.5, 0.0, 0.5, 0.0, 0.0, 0.0]
@@ -39,6 +58,9 @@ if __name__ == "__main__":
         print("traget_pos:", traget_pos)
         response_cartesian = move_arm_cartesian_client(traget_pos[0], traget_pos[1], traget_pos[2], traget_pos[3], traget_pos[4], traget_pos[5])
         # print("MoveArmCartesian response:", response_cartesian)
+
+        rospy.loginfo("Updated force_torque_matrix in main:\n%s", force_torque_matrix)
+
         rospy.sleep(0.05)
 
 
