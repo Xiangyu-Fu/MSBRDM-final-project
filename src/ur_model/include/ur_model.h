@@ -105,8 +105,9 @@ namespace ur_model_namespace
         ////////////////////////////////
         /// Transformation Matrix: Ti_0 & Tcmi_0, i=1...6
         ////////////////////////////////
+        cc::HomogeneousTransformation Tef_0(const cc::JointPosition &q) const;
         cc::HomogeneousTransformation Ti_0(const cc::JointPosition &q, 
-                                        int i) const;
+                                            int i) const;
         cc::HomogeneousTransformation Tcmi_0(const cc::JointPosition &q, 
                                             int i) const;
 
@@ -115,6 +116,9 @@ namespace ur_model_namespace
         /// Jacobian Matrix: Ji_0 & Jcmi_0, i=1...6
         //                  Jdot_i_0 & Jdot_cmi_0, i=1...6
         ////////////////////////////////
+        cc::Jacobian Jef_0(const cc::JointPosition &q) const;
+        cc::Jacobian Jef_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qP) const;
+
         cc::Jacobian Ji_0(const cc::JointPosition &q, 
                         int j) const;
         cc::Jacobian Jcmi_0(const cc::JointPosition &q, 

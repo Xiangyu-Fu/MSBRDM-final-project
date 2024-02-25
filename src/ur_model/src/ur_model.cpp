@@ -99,7 +99,14 @@ namespace ur_model_namespace
     ////////////////////////////////
     /// Transformation Matrix: Ti_0 & Tcmi_0, i=1...6
     ////////////////////////////////
-    cc::HomogeneousTransformation Ti_0(const cc::JointPosition &q, 
+    cc::HomogeneousTransformation URModel::Tef_0(const cc::JointPosition &q) const
+    {
+        cc::HomogeneousTransformation T;
+        caculet_T6_0(T, q);
+        return T;
+    }
+    
+    cc::HomogeneousTransformation URModel::Ti_0(const cc::JointPosition &q, 
                                     int i) const
     {
         cc::HomogeneousTransformation T;
@@ -122,7 +129,7 @@ namespace ur_model_namespace
         return T;
     }
 
-    cc::HomogeneousTransformation Tcmi_0(const cc::JointPosition &q, 
+    cc::HomogeneousTransformation URModel::Tcmi_0(const cc::JointPosition &q, 
                                     int i) const
     {
         cc::HomogeneousTransformation T;
@@ -149,7 +156,22 @@ namespace ur_model_namespace
     /// Jacobian Matrix: Ji_0 & Jcmi_0, i=1...6
     //                  Jdot_i_0 & Jdot_cmi_0, i=1...6
     ////////////////////////////////
-    cc::HomogeneousTransformation Ji_0(const cc::JointPosition &q, 
+    cc::Jacobian URModel::Jef_0(const cc::JointPosition &q) const
+    {
+        cc::Jacobian J = cc::Jacobian::Zero();
+        caculet_J6_0(J, q);
+        return J;
+    }
+
+    cc::Jacobian URModel::Jef_0_dot(const cc::JointPosition &q, const cc::JointVelocity &qP) const
+    {
+        cc::Jacobian Jp = cc::Jacobian::Zero();
+        caculet_J6_0_dot(Jp, q, qP);
+        return Jp;
+    }
+
+
+    cc::HomogeneousTransformation URModel::Ji_0(const cc::JointPosition &q, 
                                     int i) const
     {
         cc::Jacobian J = cc::Jacobian::Zero();
@@ -172,7 +194,7 @@ namespace ur_model_namespace
         return J;
     }
 
-    cc::HomogeneousTransformation Jcmi_0(const cc::JointPosition &q, 
+    cc::HomogeneousTransformation URModel::Jcmi_0(const cc::JointPosition &q, 
                                         int i) const
     {
         cc::Jacobian J = cc::Jacobian::Zero();
@@ -196,7 +218,7 @@ namespace ur_model_namespace
     }
 
     ////////////////////////////////
-    cc::HomogeneousTransformation Ji_0_dot(const cc::JointPosition &q, 
+    cc::HomogeneousTransformation URModel::Ji_0_dot(const cc::JointPosition &q, 
                                     int i) const
     {
         cc::Jacobian J_dot = cc::Jacobian::Zero();
@@ -219,7 +241,7 @@ namespace ur_model_namespace
         return J_dot;
     }
 
-    cc::HomogeneousTransformation Jcmi_0_dot(const cc::JointPosition &q, 
+    cc::HomogeneousTransformation URModel::Jcmi_0_dot(const cc::JointPosition &q, 
                                     int i) const
     {
         cc::Jacobian J_dot = cc::Jacobian::Zero();

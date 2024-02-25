@@ -1,5 +1,8 @@
 #include <ur_model/ur_model.h>
 
+#include <cmath>
+#include <ur_model/ur_model.h>
+
 using namespace ur_model_namespace;
 
 void URModel::caculet_T1_0(cc::HomogeneousTransformation &T1_0,

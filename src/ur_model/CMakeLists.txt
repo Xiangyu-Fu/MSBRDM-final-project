@@ -126,14 +126,11 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/model_ur.cpp
-  src/jacobians_p.cpp
-  src/jacobians.cpp
-  src/matrix_c.cpp
-  src/matrix_g.cpp
-  src/matrix_m.cpp
-  src/matrix_th.cpp
-  src/matrix_yr.cpp
-  src/kinematics.cpp
+  src/kinemcaculet_FKatics.cpp
+  src/caculet_jacobian.cpp
+  src/caculet_jacobian_dot.cpp
+  src/caculet_MCG.cpp
+  src/caculet_regressor.cpp  
 )
 
 ## Add cmake target dependencies of the library
