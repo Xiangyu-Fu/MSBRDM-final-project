@@ -5,16 +5,14 @@ import sys
 import math
 import rospy
 from knob_robot_control.msg import KnobState, KnobCommand
-from robot_movement_interface.msg import EulerFrame
 from std_msgs.msg import String, Int32, Float32
 from threading import Lock, Thread
-from robot_controller import RobotController
 from geometry_msgs.msg import WrenchStamped
 from sensor_msgs.msg import JointState
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QDoubleSpinBox, QLabel, QLineEdit
-from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
+# from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import Qt
 
@@ -32,7 +30,6 @@ class Ui_MainWindow(object):
         self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback)
         self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
         self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback)
-        self.tcp_state_sub = rospy.Subscriber("/tool_frame", EulerFrame, self.tcp_state_callback) 
         self.knob_command_pub = rospy.Publisher("/knob_command", KnobCommand, queue_size=10)
 
     def setupUi(self, MainWindow):
@@ -253,31 +250,31 @@ class Ui_MainWindow(object):
         self.widget5.setObjectName("widget5")
         self.verticalLayout_chart = QtWidgets.QVBoxLayout(self.widget5)
 
-        self.chart = QChart()
-        self.chart.setTitle("Example Chart")
-        self.chart_view = QChartView(self.chart)
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.verticalLayout_chart.addWidget(self.chart_view)
+        # self.chart = QChart()
+        # self.chart.setTitle("Example Chart")
+        # self.chart_view = QChartView(self.chart)
+        # self.chart_view.setRenderHint(QPainter.Antialiasing)
+        # self.verticalLayout_chart.addWidget(self.chart_view)
 
-        self.series1 = QLineSeries()
-        self.chart.addSeries(self.series1)
-        self.series1.setName("TCP Force")
+        # self.series1 = QLineSeries()
+        # self.chart.addSeries(self.series1)
+        # self.series1.setName("TCP Force")
 
-        self.series2 = QLineSeries()
-        self.chart.addSeries(self.series2)
-        self.series2.setName("Knob Force")
+        # self.series2 = QLineSeries()
+        # self.chart.addSeries(self.series2)
+        # self.series2.setName("Knob Force")
 
-        self.axisX = QValueAxis()
-        self.axisY = QValueAxis()
-        self.axisX.setTitleText("X Axis")
-        self.axisY.setTitleText("Y Axis")
-        self.chart.setAxisX(self.axisX, self.series1)
-        self.chart.setAxisY(self.axisY, self.series1)
-        self.chart.setAxisX(self.axisX, self.series2)
-        self.chart.setAxisY(self.axisY, self.series2)
+        # self.axisX = QValueAxis()
+        # self.axisY = QValueAxis()
+        # self.axisX.setTitleText("X Axis")
+        # self.axisY.setTitleText("Y Axis")
+        # self.chart.setAxisX(self.axisX, self.series1)
+        # self.chart.setAxisY(self.axisY, self.series1)
+        # self.chart.setAxisX(self.axisX, self.series2)
+        # self.chart.setAxisY(self.axisY, self.series2)
 
-        self.axisX.setRange(0, 100) 
-        self.axisY.setRange(-10, 10)  
+        # self.axisX.setRange(0, 100) 
+        # self.axisY.setRange(-10, 10)  
         
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -289,7 +286,7 @@ class Ui_MainWindow(object):
         It sets the window title, ranges and default values for spinboxes, button callbacks, labels, and mode selection.
         """
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "UR10 Knob Control"))
         self.menuHome.setTitle(_translate("MainWindow", "Home"))
 
         # Set ranges and default values for spinboxes
@@ -318,7 +315,7 @@ class Ui_MainWindow(object):
         self.label_9.setText(_translate("MainWindow", "Mode Publisher"))
         self.label_10.setText(_translate("MainWindow", "State Monitor"))
         self.label_11.setText(_translate("MainWindow", "Control Mode"))
-        self.label_7.setText(_translate("MainWindow", "TCP Position"))
+        self.label_7.setText(_translate("MainWindow", "CART Position"))
         self.label_8.setText(_translate("MainWindow", "Joints"))
         self.label.setText(_translate("MainWindow", "Num Positions"))
         self.label_2.setText(_translate("MainWindow", "Positions"))
@@ -329,10 +326,10 @@ class Ui_MainWindow(object):
 
         # Mode selection
         self.radioButton.setText(_translate("MainWindow", " JOINT"))
-        self.radioButton_2.setText(_translate("MainWindow", " TCP"))
+        self.radioButton_2.setText(_translate("MainWindow", " CART"))
         self.radioButton_2.setChecked(True)
 
-        # TCP selection
+        # EE selection
         self.radioButton_5.setText(_translate("MainWindow", "X"))
         self.radioButton_4.setText(_translate("MainWindow", "Y"))
         self.radioButton_3.setText(_translate("MainWindow", "Z"))
@@ -349,10 +346,10 @@ class Ui_MainWindow(object):
 
     def update_chart_tcp(self, value) -> None:
         """
-        Update the chart with a new TCP value.
+        Update the chart with a new EE value.
 
         Args:
-            value (float): The new TCP value to add to the chart.
+            value (float): The new EE value to add to the chart.
 
         Returns:
             None
@@ -512,6 +509,7 @@ class Ui_MainWindow(object):
         self.doubleSpinBox_16.setValue(data.position[3])
         self.doubleSpinBox_17.setValue(data.position[4])
         self.doubleSpinBox_18.setValue(data.position[5])
+        
 
     def tcp_state_callback(self, data) -> None:
         self.text_line_edit.setValue(data.x)

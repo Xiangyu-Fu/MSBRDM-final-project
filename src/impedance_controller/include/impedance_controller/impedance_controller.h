@@ -30,6 +30,8 @@ namespace tum_ics_ur_robot_lli
 
       ros::NodeHandle nh_;
       ros::Publisher control_data_pub_;
+      ros::Publisher joint_state_pub_;
+      ros::Publisher ee_pose_pub_;
 
       Matrix6d Kp_;
       Matrix6d Kd_;
