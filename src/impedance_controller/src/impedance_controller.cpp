@@ -332,10 +332,11 @@ namespace tum_ics_ur_robot_lli
         ee_pose_msg.pose.position.x = X_ee.translation()(0);
         ee_pose_msg.pose.position.y = X_ee.translation()(1);
         ee_pose_msg.pose.position.z = X_ee.translation()(2);
-        ee_pose_msg.pose.orientation.x = X_ee.rotation().x();
-        ee_pose_msg.pose.orientation.y = X_ee.rotation().y();
-        ee_pose_msg.pose.orientation.z = X_ee.rotation().z();
-        ee_pose_msg.pose.orientation.w = X_ee.rotation().w();
+        // TODO: add orientation
+        // ee_pose_msg.pose.orientation.x = X_ee.rotation().x();
+        // ee_pose_msg.pose.orientation.y = X_ee.rotation().y();
+        // ee_pose_msg.pose.orientation.z = X_ee.rotation().z();
+        // ee_pose_msg.pose.orientation.w = X_ee.rotation().w();
         ee_pose_pub_.publish(ee_pose_msg);
       }
 

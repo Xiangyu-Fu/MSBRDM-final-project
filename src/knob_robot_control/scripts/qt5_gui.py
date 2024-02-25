@@ -12,7 +12,7 @@ from sensor_msgs.msg import JointState
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QDoubleSpinBox, QLabel, QLineEdit
-from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
+# from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import Qt
 
@@ -250,31 +250,31 @@ class Ui_MainWindow(object):
         self.widget5.setObjectName("widget5")
         self.verticalLayout_chart = QtWidgets.QVBoxLayout(self.widget5)
 
-        self.chart = QChart()
-        self.chart.setTitle("Example Chart")
-        self.chart_view = QChartView(self.chart)
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.verticalLayout_chart.addWidget(self.chart_view)
+        # self.chart = QChart()
+        # self.chart.setTitle("Example Chart")
+        # self.chart_view = QChartView(self.chart)
+        # self.chart_view.setRenderHint(QPainter.Antialiasing)
+        # self.verticalLayout_chart.addWidget(self.chart_view)
 
-        self.series1 = QLineSeries()
-        self.chart.addSeries(self.series1)
-        self.series1.setName("TCP Force")
+        # self.series1 = QLineSeries()
+        # self.chart.addSeries(self.series1)
+        # self.series1.setName("TCP Force")
 
-        self.series2 = QLineSeries()
-        self.chart.addSeries(self.series2)
-        self.series2.setName("Knob Force")
+        # self.series2 = QLineSeries()
+        # self.chart.addSeries(self.series2)
+        # self.series2.setName("Knob Force")
 
-        self.axisX = QValueAxis()
-        self.axisY = QValueAxis()
-        self.axisX.setTitleText("X Axis")
-        self.axisY.setTitleText("Y Axis")
-        self.chart.setAxisX(self.axisX, self.series1)
-        self.chart.setAxisY(self.axisY, self.series1)
-        self.chart.setAxisX(self.axisX, self.series2)
-        self.chart.setAxisY(self.axisY, self.series2)
+        # self.axisX = QValueAxis()
+        # self.axisY = QValueAxis()
+        # self.axisX.setTitleText("X Axis")
+        # self.axisY.setTitleText("Y Axis")
+        # self.chart.setAxisX(self.axisX, self.series1)
+        # self.chart.setAxisY(self.axisY, self.series1)
+        # self.chart.setAxisX(self.axisX, self.series2)
+        # self.chart.setAxisY(self.axisY, self.series2)
 
-        self.axisX.setRange(0, 100) 
-        self.axisY.setRange(-10, 10)  
+        # self.axisX.setRange(0, 100) 
+        # self.axisY.setRange(-10, 10)  
         
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -509,6 +509,7 @@ class Ui_MainWindow(object):
         self.doubleSpinBox_16.setValue(data.position[3])
         self.doubleSpinBox_17.setValue(data.position[4])
         self.doubleSpinBox_18.setValue(data.position[5])
+        
 
     def tcp_state_callback(self, data) -> None:
         self.text_line_edit.setValue(data.x)

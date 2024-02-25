@@ -348,7 +348,7 @@ namespace tum_ics_ur_robot_lli
           // ROS_WARN_STREAM("Respline!");
           X_start_ = model_.T_ef_0(state.q);
           elapsed_ = 0;
-          should_respline_ = false;
+          should_respline_ = false;impe
         }
         else if (delta_t < spline_duration_ && holding_ == false)
         {

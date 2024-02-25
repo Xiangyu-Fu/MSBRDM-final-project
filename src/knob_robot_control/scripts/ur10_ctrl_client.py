@@ -13,23 +13,31 @@ class UR10CtrlClient:
                             math.radians(90),
                             math.radians(0)]
 
-    def move_arm_cartesian(self, x, y, z, rx, ry, rz) -> str:
+    def move_arm_cartesian(self, pose) -> str:
         rospy.wait_for_service('move_arm_cartesian')
+        x = pose[0]
+        y = pose[1]
+        z = pose[2]
+        rx = pose[3]
+        ry = pose[4]
+        rz = pose[5]
         try:
             move_arm_cartesian = rospy.ServiceProxy('move_arm_cartesian', MoveArmCartesian)
             response = move_arm_cartesian(x, y, z, rx, ry, rz)
-            return response
+            return True
         except rospy.ServiceException as e:
-            print("Service call failed:", e)
+            rospy.logerr("Service call failed:", e)
+            return False
 
     def move_arm_joint(self, joint0, joint1, joint2, joint3, joint4, joint5) -> str:
         rospy.wait_for_service('move_arm_joint')
         try:
             move_arm_joint = rospy.ServiceProxy('move_arm_joint', MoveArmJoint)
             response = move_arm_joint(joint0, joint1, joint2, joint3, joint4, joint5)
-            return response
+            return True
         except rospy.ServiceException as e:
-            print("Service call failed:", e)
+            rospy.logerr("Service call failed:", e)
+            return False
 
     def move_arm_cartesian_home(self) -> None:
         self.move_arm_cartesian(self.home_pos[0],
