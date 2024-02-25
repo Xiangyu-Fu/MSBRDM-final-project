@@ -1,5 +1,3 @@
-#include <ur_model/ur_model.h>
-
 #include <cmath>
 #include <ur_model/ur_model.h>
 
