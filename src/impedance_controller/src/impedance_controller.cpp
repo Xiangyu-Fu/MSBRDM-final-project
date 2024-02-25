@@ -1,6 +1,7 @@
 #include <impedance_controller/impedance_controller.h>
 #include <tum_ics_ur_robot_msgs/ControlData.h>
-
+#include <sensor_msgs/JointState.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace tum_ics_ur_robot_lli
 {
@@ -26,6 +27,8 @@ namespace tum_ics_ur_robot_lli
       model_("ur10_model")
     {
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
+      joint_state_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
+      ee_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("end_effector_pose", 1);
 
       // Start two Services
       move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
@@ -314,6 +317,30 @@ namespace tum_ics_ur_robot_lli
       joint_state_ = state;
       auto X_ee = model_.T_ef_0(state.q);
 
+      // publish  data
+      {
+        // publish joint state
+        sensor_msgs::JointState joint_state_msg;
+        joint_state_msg.header.stamp = ros::Time::now();
+        joint_state_msg.name = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
+        joint_state_msg.position = {state.q(0), state.q(1), state.q(2), state.q(3), state.q(4), state.q(5)};
+        joint_state_pub_.publish(joint_state_msg);
+
+        // publish ee pose
+        geometry_msgs::PoseStamped ee_pose_msg;
+        ee_pose_msg.header.stamp = ros::Time::now();
+        ee_pose_msg.pose.position.x = X_ee.translation()(0);
+        ee_pose_msg.pose.position.y = X_ee.translation()(1);
+        ee_pose_msg.pose.position.z = X_ee.translation()(2);
+        ee_pose_msg.pose.orientation.x = X_ee.rotation().x();
+        ee_pose_msg.pose.orientation.y = X_ee.rotation().y();
+        ee_pose_msg.pose.orientation.z = X_ee.rotation().z();
+        ee_pose_msg.pose.orientation.w = X_ee.rotation().w();
+        ee_pose_pub_.publish(ee_pose_msg);
+      }
+
+
+
       if(control_mode_ != CARTESIAN)
       {
         ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
@@ -335,7 +362,6 @@ namespace tum_ics_ur_robot_lli
 
       //////////////////////////////
       // INIT MODE
-      // FIXME: add gravity compensation
       //////////////////////////////
       if(control_mode_ == INIT)
       {

@@ -10,12 +10,12 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String, Int32, Float32
 from knob_robot_control.msg import KnobState, KnobCommand
 from threading import Lock
-from robot_controller import RobotController
+from ur10_ctrl_client import UR10CtrlClient
 from geometry_msgs.msg import WrenchStamped
 from qt5_gui import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class KnobController(RobotController):
+class UR10CtrlMain(UR10CtrlClient):
     def __init__(self):
         super().__init__()
 
@@ -73,7 +73,6 @@ class KnobGui(Ui_MainWindow):
     def __init__(self) -> None:
         super().__init__()
 
-        self.robot_controller = RobotController()
 
         # define the subscibers
         self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback)
