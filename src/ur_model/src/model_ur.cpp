@@ -278,13 +278,6 @@ namespace ur
     return std::numeric_limits<cc::Scalar>::infinity();
   }
 
-
-  void URModel::inverseKinematics(IKSolutions &Qs, const cc::HomogeneousTransformation &Tef, cc::Scalar q6_d) const
-  {
-    matrix_IK(Qs, Tef, q6_d);
-  }
-
-
   bool URModel::init(ros::NodeHandle &nh)
   {
     std::string ns = Base::name() + '/';
