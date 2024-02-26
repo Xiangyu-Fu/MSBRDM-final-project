@@ -1,7 +1,7 @@
 #include <cmath>
 #include <ur_model/ur_model.h>
 
-using namespace ur_model_namespace;
+using namespace tum_ics_ur_model;
 
 void URModel::caculet_Theta(Regressor_Theta &Theta) const
 {

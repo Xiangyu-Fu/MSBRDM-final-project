@@ -1,29 +1,17 @@
 # [C++] ur_model
 
 ## 待办事项
-- 添加速度限制
-- 添加{ef}函数
-- 修改函数名
+- 修改cmake, package, model_base文件
+- 移动到ur_6dof
+- 加上速度限制
 
 ## 可能会出错的地方
-- 省略的部分 请看`Back_UP.cpp`
-- #ifndef MATRIX_M_H_
-  #define MATRIX_M_H_
-
+- 
 
 
 
 # [Matlab] ur_model
 > **如果公式太长，VS Code自动切割为多行，按ALT+Z即可取消**
-
-## 已完成
-- **自动Matlab Symbolic转换C++表达式函数**  
-  （那一年，所有的工人都在抵制珍妮纺纱机×
-- FK(Transformation Matrix)
-- Jacobian
-- M, C, G
-- Regressor
-- Jacobian_dot
 
 
 ## 其他注意事项

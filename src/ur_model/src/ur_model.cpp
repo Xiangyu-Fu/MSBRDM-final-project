@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 
 
-namespace ur_model_namespace
+namespace tum_ics_ur_model
 {
     //////////////////////////////////////////////////////////////////////////////////////////
     /// Initial
@@ -275,6 +275,6 @@ namespace ur_model_namespace
 
 
 
-} // namespace ur_model_namespace
+} // namespace tum_ics_ur_model
 
 // #endif // UR_MODEL_CPP

@@ -6,7 +6,7 @@
  *
  * \date 17/02/2024
  *
- * \copyright Your Copyright
+ * \copyright 
  *
  * License details.
  *
@@ -27,7 +27,7 @@
 #include <control_core/types.h>
 
 
-namespace ur_model_namespace
+namespace tum_ics_ur_model
 {
     class URModel : public model_interface::ModelBase
     {
