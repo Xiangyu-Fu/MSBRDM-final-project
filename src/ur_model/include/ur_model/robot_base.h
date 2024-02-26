@@ -28,13 +28,53 @@ namespace tum_ics_ur_robot_base
     class RobotBase
     {
     public:
-        enum Mode {INIT, JOINT, CARTESIAN};
+        enum Mode {CREATE, INITIALIZED};
+    
+    private:
+        Mode mode_;
+        std::string name_;
+
+    public:
+        RobotBase(const std::string& name): 
+            name_(name),
+            mode_(CREATE) 
+        {}
+
+        virtual ~RobotBase() {} 
+
+        // is model initialized?
+        // if not, try to initialized
+        bool is_Initialized(ros::NodeHandle& nh) 
+        {
+            if(mode_ == INITIALIZED)
+                return true;
+
+            if(init(nh)) {
+                mode_ = INITIALIZED;
+                return true;
+            }
+            return false;
+        }
+
+        // is model initialized?
+        // only return state, not try
+        bool get_mode() const {
+            return mode_ == INITIALIZED;
+        }
+
+        std::string get_name() const 
+        { 
+            return name_; 
+        }
 
     private:
-    }
+        virtual bool init(ros::NodeHandle& nh) = 0;
+    };
 
 
 
 
-    
+
 }
+
+#endif

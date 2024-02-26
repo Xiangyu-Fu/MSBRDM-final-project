@@ -32,8 +32,8 @@ namespace tum_ics_ur_model
         ////////////////////////////////
         /// Initial Constant
         ////////////////////////////////
-        std::string ns = Base::name() + '/';
-        std::cout << "name: " << Base::name() << std::endl;
+        std::string ns = Base::get_name() + '/';
+        std::cout << "name: " << Base::get_name() << std::endl;
 
         // for (int i = 1; i <= 6; ++i) {
         //     cc::load(ns + "L" + std::to_string(i));

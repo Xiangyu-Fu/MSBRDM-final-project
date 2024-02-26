@@ -2,8 +2,9 @@
 
 ## 待办事项
 - 修改cmake, package, model_base文件
-- 移动到ur_6dof
 - 加上速度限制
+- 写新的node
+- 移动到ur_6dof
 
 ## 可能会出错的地方
 - 

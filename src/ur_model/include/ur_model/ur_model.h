@@ -22,14 +22,14 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <ros/ros.h>
-#include <ur_model/model_base.h>
+#include <ur_model/robot_base.h>
 #include <ros/node_handle.h>
 #include <control_core/types.h>
 
 
 namespace tum_ics_ur_model
 {
-    class URModel : public model_interface::ModelBase
+    class URModel : public tum_ics_ur_robot_base::RobotBase
     {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Variable
@@ -43,7 +43,7 @@ namespace tum_ics_ur_model
         // Types
         ////////////////////////////////
 
-        typedef model_interface::ModelBase Base;
+        typedef tum_ics_ur_robot_base::RobotBase Base;
         typedef cc::VectorX Regressor_Theta;    // 61*1
         typedef cc::MatrixX Regressor_Yr;       // 6*61
         
@@ -230,7 +230,7 @@ namespace tum_ics_ur_model
 
     };
 
-} // namespace ur_model_namespace
+} // namespace tum_ics_ur_model
 
 #endif // UR_MODEL_H
 
