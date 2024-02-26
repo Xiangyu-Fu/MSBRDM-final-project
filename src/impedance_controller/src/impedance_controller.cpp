@@ -29,10 +29,13 @@ namespace tum_ics_ur_robot_lli
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
       joint_state_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
       ee_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("end_effector_pose", 1);
+      wrench_sub_ = nh.subscribe("/fake_schunk_netbox/raw", 10, &ImpedanceControl::wrenchCallback, this);
 
       // Start two Services
       move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
       move_arm_joint_service_ = nh_.advertiseService("move_arm_joint", &ImpedanceControl::moveArmJoint, this);
+      get_wrench_data_service = nh_.advertiseService("get_wrench_data", &ImpedanceControl::getWrenchData, this);
+
     }
 
     ImpedanceControl::~ImpedanceControl()
@@ -50,6 +53,11 @@ namespace tum_ics_ur_robot_lli
     void ImpedanceControl::setQPark(const JointState &q_park)
     {
       q_park_ = q_park;
+    }
+
+    void ImpedanceControl::wrenchCallback(const geometry_msgs::WrenchStamped::ConstPtr& msg) 
+    {
+    this->latest_wrench = *msg;
     }
 
     bool ImpedanceControl::moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res)
@@ -125,6 +133,12 @@ namespace tum_ics_ur_robot_lli
 
       ROS_WARN_STREAM("Switching to JOINT mode");
       return true;
+    }
+
+    bool ImpedanceControl::getWrenchData(impedance_controller::GetWrenchData::Request &req,impedance_controller::GetWrenchData::Response &res) 
+    {
+        res.wrench = latest_wrench;
+        return true;
     }
 
     bool ImpedanceControl::init()
@@ -498,7 +512,30 @@ namespace tum_ics_ur_robot_lli
 
         Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
 
-        tau = tau_tracking + tau_avoiding;
+        // tau = tau_tracking + tau_avoiding;
+
+        if (latest_wrench.wrench.force.z >490)
+        {
+            ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+                << latest_wrench.wrench.force.x << ", " 
+                << latest_wrench.wrench.force.y << ", " 
+                << latest_wrench.wrench.force.z << "] ");
+          // Get the nullspace stuff 
+          Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+          auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);//Fix
+          auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+          Vector6d task2 = Null_sp * tauTotalAvoid;
+
+          Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
+          
+          tau = tau_tracking + tau_avoiding;
+            
+        }
+        else
+        {
+            ROS_INFO_STREAM_THROTTLE(1, "No significant force received.");
+            tau = tau_tracking;
+        }
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
       }
@@ -574,7 +611,6 @@ namespace tum_ics_ur_robot_lli
       double d_min = 10e-5;
       T_i_0 = model_.Ti_0(state.q, j);
       d = (X_red_ - T_i_0.position()).norm();  
-      ROS_INFO_STREAM( " Distance Ball from joint j " << j << "  " << d);
       if(d < d_min)
         d = d_min;
 

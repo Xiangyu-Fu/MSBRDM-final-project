@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   ur_model
+  geometry_msgs
 )
 
 
@@ -23,6 +24,7 @@ add_service_files(
   FILES
   MoveArmCartesian.srv
   MoveArmJoint.srv
+  GetWrenchData.srv
 )
 
 
@@ -30,6 +32,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 ##############################################################################
 # Eigen
