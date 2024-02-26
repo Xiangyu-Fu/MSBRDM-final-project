@@ -101,6 +101,10 @@ namespace tum_ics_ur_robot_lli
         ROS_WARN_STREAM("ImpedanceControl: moveArmJoint: INIT mode, cannot switch to JOINT mode");
         return false;
       }
+      else if(control_mode_ == CARTESIAN)
+      {
+        ROS_WARN_STREAM("Change to JOINT mode from CARTESIAN mode");
+      }
       ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
       control_mode_ = JOINT;
       running_time_ = 0.0;
@@ -123,14 +127,7 @@ namespace tum_ics_ur_robot_lli
           max_diff = diff;
         }
       }
-      // debug info
-      // print current joint state
-      std::cout << "Current joint state: " << joint_state_.q.transpose() << std::endl;
-      // print goal joint state
-      std::cout << "Goal joint state: " << q_goal_.transpose() << std::endl;
-
       spline_period_ = max_diff * 3;
-
       return true;
     }
 
@@ -362,7 +359,7 @@ namespace tum_ics_ur_robot_lli
       //////////////////////////////
       // CONTROL MODE SWITCH
       //////////////////////////////
-      if(time.tD() > init_period_ && control_mode_ == INIT)
+      if(time.tD() > init_period_ + 1 && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
           // q_start_ = state.q;
@@ -412,7 +409,6 @@ namespace tum_ics_ur_robot_lli
 
       //////////////////////////////
       // JOINT MODE
-      // FIXME: FIX JOINT MODE
       //////////////////////////////
       else if(control_mode_ == JOINT)
       {
@@ -439,6 +435,7 @@ namespace tum_ics_ur_robot_lli
         q_ref = state;
         q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
         q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
+
         // torque
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
