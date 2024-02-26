@@ -81,7 +81,7 @@ wrench:
   force: 
     x: -131.479277
     y: -76.275814
-    z: 486.909591
+    z: 485.809591
   torque: 
     x: -0.78713
     y: -6.932118
@@ -108,7 +108,10 @@ roslaunch tum_ics_ur10_bringup bringUR10.launch
 
 roslaunch tum_ics_ur_robot_manager robot_script_manager_ur10.launch
 
-roslaunch impedance_controller impedance_controller.launch 
+roslaunch impedance_controller impedance_controller.launch
 
-rosrun knob_controller knob_control.py 
+roslaunch tum_ics_schunk_netbox sensor_publisher.launch
+
+rosrun knob_robot_control fake_ft_pub.py
+
 ```

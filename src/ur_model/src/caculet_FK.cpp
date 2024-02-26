@@ -1,3 +1,4 @@
+#include <cmath>
 #include <ur_model/ur_model.h>
 
 using namespace ur_model_namespace;
@@ -260,6 +261,3 @@ void URModel::caculet_Tcm6_0(cc::HomogeneousTransformation &Tcm6_0,
     Tcm6_0(3,2) = 0;
     Tcm6_0(3,3) = 1;
 }
-
-#endif
-

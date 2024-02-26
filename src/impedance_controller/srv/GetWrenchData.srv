@@ -1,0 +1,3 @@
+# GetWrenchData.srv
+---
+geometry_msgs/WrenchStamped wrench

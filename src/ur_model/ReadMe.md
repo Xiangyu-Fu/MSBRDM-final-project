@@ -1,3 +1,18 @@
+# [C++] ur_model
+
+## 待办事项
+- 添加速度限制
+- 添加{ef}函数
+- 修改函数名
+
+## 可能会出错的地方
+- 省略的部分 请看`Back_UP.cpp`
+- #ifndef MATRIX_M_H_
+  #define MATRIX_M_H_
+
+
+
+
 # [Matlab] ur_model
 > **如果公式太长，VS Code自动切割为多行，按ALT+Z即可取消**
 
@@ -9,11 +24,6 @@
 - M, C, G
 - Regressor
 - Jacobian_dot
-
-## 代办
-- 切换DH
-- IK
-- J_time(可能需要)
 
 
 ## 其他注意事项

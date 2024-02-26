@@ -4,6 +4,8 @@
 #include <tum_ics_ur_robot_lli/RobotControllers/ControlEffort.h>
 #include "impedance_controller/MoveArmCartesian.h"
 #include "impedance_controller/MoveArmJoint.h"
+#include "impedance_controller/GetWrenchData.h"
+#include "geometry_msgs/WrenchStamped.h"
 #include<ros/ros.h>
 #include <Eigen/Dense>
 
@@ -27,11 +29,13 @@ namespace tum_ics_ur_robot_lli
       JointState q_init_;
       JointState q_home_;
       JointState q_park_;
+      geometry_msgs::WrenchStamped latest_wrench;
 
       ros::NodeHandle nh_;
       ros::Publisher control_data_pub_;
       ros::Publisher joint_state_pub_;
       ros::Publisher ee_pose_pub_;
+      ros::Subscriber wrench_sub_;
 
       Matrix6d Kp_;
       Matrix6d Kd_;
@@ -46,6 +50,7 @@ namespace tum_ics_ur_robot_lli
       // rosservices
       ros::ServiceServer move_arm_cartesian_service_;
       ros::ServiceServer move_arm_joint_service_;
+      ros::ServiceServer get_wrench_data_service;
 
       // global params
       Mode control_mode_;
@@ -70,7 +75,7 @@ namespace tum_ics_ur_robot_lli
       Matrix6d Kd_cart_;
       Matrix6d Ki_cart_;
       Vector6d cart_error_;
-      ur::URModel model_; 
+      ur_model_namespace::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;
       cc::CartesianState x_desired_;
@@ -93,9 +98,12 @@ namespace tum_ics_ur_robot_lli
 
       void setQPark(const JointState &q_park);
 
+      void wrenchCallback(const geometry_msgs::WrenchStamped::ConstPtr& msg);
+
       // Two services
       bool moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res);
       bool moveArmJoint(impedance_controller::MoveArmJoint::Request &req, impedance_controller::MoveArmJoint::Response &res);
+      bool getWrenchData(impedance_controller::GetWrenchData::Request &req,impedance_controller::GetWrenchData::Response &res);
 
     private:
       bool init();

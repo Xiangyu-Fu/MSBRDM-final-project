@@ -6,10 +6,10 @@ import numpy as np
 from geometry_msgs.msg import WrenchStamped
 
 # global variable
+global force_torque_matrix
 force_torque_matrix = np.zeros((6, 1))
 
 def FT_callback(data):
-    global force_torque_matrix
     force_torque_matrix[0] = data.wrench.force.x
     force_torque_matrix[1] = data.wrench.force.y
     force_torque_matrix[2] = data.wrench.force.z

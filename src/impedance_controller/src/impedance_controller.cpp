@@ -29,10 +29,13 @@ namespace tum_ics_ur_robot_lli
       control_data_pub_ = nh_.advertise<tum_ics_ur_robot_msgs::ControlData>("simple_effort_controller_data", 1);
       joint_state_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
       ee_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("end_effector_pose", 1);
+      wrench_sub_ = nh.subscribe("/fake_schunk_netbox/raw", 10, &ImpedanceControl::wrenchCallback, this);
 
       // Start two Services
       move_arm_cartesian_service_ = nh_.advertiseService("move_arm_cartesian", &ImpedanceControl::moveArmCartesian, this);
       move_arm_joint_service_ = nh_.advertiseService("move_arm_joint", &ImpedanceControl::moveArmJoint, this);
+      get_wrench_data_service = nh_.advertiseService("get_wrench_data", &ImpedanceControl::getWrenchData, this);
+
     }
 
     ImpedanceControl::~ImpedanceControl()
@@ -52,6 +55,11 @@ namespace tum_ics_ur_robot_lli
       q_park_ = q_park;
     }
 
+    void ImpedanceControl::wrenchCallback(const geometry_msgs::WrenchStamped::ConstPtr& msg) 
+    {
+    this->latest_wrench = *msg;
+    }
+
     bool ImpedanceControl::moveArmCartesian(impedance_controller::MoveArmCartesian::Request &req, impedance_controller::MoveArmCartesian::Response &res)
     {
       if(control_mode_ == INIT)
@@ -65,7 +73,7 @@ namespace tum_ics_ur_robot_lli
       running_time_ = 0.0;
 
       // get the current joint state
-      auto T_ef_0 = model_.T_ef_0(joint_state_.q);
+      auto T_ef_0 = model_.Tef_0(joint_state_.q);
       // std::cout << "T_ef_0: " << T_ef_0.translation().transpose() << std::endl;
 
       ee_start_.pos().linear() = T_ef_0.translation();
@@ -125,6 +133,12 @@ namespace tum_ics_ur_robot_lli
 
       ROS_WARN_STREAM("Switching to JOINT mode");
       return true;
+    }
+
+    bool ImpedanceControl::getWrenchData(impedance_controller::GetWrenchData::Request &req,impedance_controller::GetWrenchData::Response &res) 
+    {
+        res.wrench = latest_wrench;
+        return true;
     }
 
     bool ImpedanceControl::init()
@@ -189,7 +203,7 @@ namespace tum_ics_ur_robot_lli
         m_error = true;
         return false;  
       }
-      theta_ = model_.parameterInitalGuess();
+      theta_ = model_.Theta_function();
 
       ros::param::get(ns_ + "/learning_rate", gamma_);
       if (!(gamma_ > 0))
@@ -286,7 +300,7 @@ namespace tum_ics_ur_robot_lli
       {
         q_start_ = state.q;
         ROS_WARN_STREAM("START [DEG]: \n" << q_start_.transpose());
-        ROS_WARN_STREAM("START [CART]: \n" << model_.T_ef_0(state.q).linear());
+        ROS_WARN_STREAM("START [CART]: \n" << model_.Tef_0(state.q).linear());
 
         // Init time
         time_prev_ = ros::Time::now();
@@ -296,7 +310,7 @@ namespace tum_ics_ur_robot_lli
         is_first_iter_ = false;
 
         // Init model
-        theta_ = model_.parameterInitalGuess();
+        theta_ = model_.Theta_function();
 
         // Init error
         joint_error_ = Vector6d::Zero();
@@ -315,7 +329,7 @@ namespace tum_ics_ur_robot_lli
       time_prev_ = time_cur;
       running_time_ += dt;
       joint_state_ = state;
-      auto X_ee = model_.T_ef_0(state.q);
+      auto X_ee = model_.Tef_0(state.q);
 
       // publish  data
       {
@@ -393,7 +407,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         Vector6d Sq = state.qp - q_ref.qp;
         // Compute regressor for cartesian control
-        const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_ * Sq + Yr * theta_;
         return tau;
@@ -428,7 +442,7 @@ namespace tum_ics_ur_robot_lli
         q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
         q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
         // torque
-        const auto& Yr = model_.regressor(state.q, state.qp, q_ref.qp, q_ref.qpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
         tau = -Kd_ * Sq + Yr * theta_;
         return tau;
@@ -458,9 +472,9 @@ namespace tum_ics_ur_robot_lli
         x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
 
         // get model
-        auto X_ee = model_.T_ef_0(state.q);
-        auto Jef = model_.J_ef_0(state.q);
-        auto Jef_dot = model_.Jp_ef_0(state.q, state.qp);
+        auto X_ee = model_.Tef_0(state.q);
+        auto Jef = model_.Jef_0(state.q);
+        auto Jef_dot = model_.Jef_0_dot(state.q, state.qp);
 
         // current cartesian state
         cc::CartesianState x_current;
@@ -486,7 +500,7 @@ namespace tum_ics_ur_robot_lli
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
         Vector6d Sq = state.qp - Qrp;
-        const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         Vector6d tau_tracking = -Kd_cart_ * Sq + Yr * theta_;
 
@@ -498,7 +512,30 @@ namespace tum_ics_ur_robot_lli
 
         Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
 
-        tau = tau_tracking + tau_avoiding;
+        // tau = tau_tracking + tau_avoiding;
+
+        if (latest_wrench.wrench.force.z >490)
+        {
+            ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+                << latest_wrench.wrench.force.x << ", " 
+                << latest_wrench.wrench.force.y << ", " 
+                << latest_wrench.wrench.force.z << "] ");
+          // Get the nullspace stuff 
+          Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+          auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);//Fix
+          auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+          Vector6d task2 = Null_sp * tauTotalAvoid;
+
+          Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
+          
+          tau = tau_tracking + tau_avoiding;
+            
+        }
+        else
+        {
+            ROS_INFO_STREAM_THROTTLE(1, "No significant force received.");
+            tau = tau_tracking;
+        }
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
       }
@@ -572,9 +609,8 @@ namespace tum_ics_ur_robot_lli
       Vector6d tau_red_i;
       double d;
       double d_min = 10e-5;
-      T_i_0 = model_.T_j_0(state.q, j);
+      T_i_0 = model_.Ti_0(state.q, j);
       d = (X_red_ - T_i_0.position()).norm();  
-      ROS_INFO_STREAM( " Distance Ball from joint j " << j << "  " << d);
       if(d < d_min)
         d = d_min;
 
@@ -590,7 +626,7 @@ namespace tum_ics_ur_robot_lli
         F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
         F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
 
-        tau_red_i = model_.J_j_0(state.q,j).block(0, 0, 2, 5).transpose() * F_red_i;
+        tau_red_i = model_.Ji_0(state.q,j).block(0, 0, 2, 5).transpose() * F_red_i;
       }
       else    // else we can set everything to zero 
           tau_red_i.setZero(); 

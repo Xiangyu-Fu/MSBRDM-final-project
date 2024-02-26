@@ -15,9 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 find_package(Eigen3 REQUIRED)
 add_definitions(${EIGEN_DEFINITIONS})
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -105,10 +105,10 @@ add_definitions(${EIGEN_DEFINITIONS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ur_model
-  CATKIN_DEPENDS control_core roscpp tf
-  DEPENDS EIGEN3
+ INCLUDE_DIRS include
+ LIBRARIES ur_model
+ CATKIN_DEPENDS control_core roscpp tf
+ DEPENDS EIGEN3
 )
 
 ###########
@@ -119,24 +119,24 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  ${EIGEN3_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/model_ur.cpp
-  src/jacobians_p.cpp
-  src/jacobians.cpp
-  src/jacobians_t_p.cpp
-  src/jacobians_t.cpp
-  src/matrix_c.cpp
-  src/matrix_g.cpp
-  src/matrix_m.cpp
-  src/matrix_th.cpp
-  src/matrix_yr.cpp
-  src/kinematics.cpp
-  src/inverse_kinematics.cpp
+  # src/${PROJECT_NAME}/ur_model.cpp
+  # src/${PROJECT_NAME}/caculet_FK.cpp
+  # src/${PROJECT_NAME}/caculet_jacobian.cpp
+  # src/${PROJECT_NAME}/caculet_jacobian_dot.cpp
+  # src/${PROJECT_NAME}/caculet_MCG.cpp
+  # src/${PROJECT_NAME}/caculet_regressor.cpp  
+  src/ur_model.cpp
+  src/caculet_FK.cpp
+  src/caculet_jacobian.cpp
+  src/caculet_jacobian_dot.cpp
+  src/caculet_MCG.cpp
+  src/caculet_regressor.cpp  
 )
 
 ## Add cmake target dependencies of the library
@@ -147,7 +147,7 @@ add_library(${PROJECT_NAME}
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node
+add_executable(${PROJECT_NAME}_node 
   src/applications/test_ur10_model_node.cpp
 )
 
@@ -166,7 +166,6 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
-## link executable
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
@@ -194,10 +193,10 @@ target_link_libraries(${PROJECT_NAME}_node
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation
