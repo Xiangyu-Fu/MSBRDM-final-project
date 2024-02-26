@@ -69,9 +69,10 @@ class UR10CtrlMain(UR10CtrlClient):
     def knob_state_callback(self, data) -> None:
         if self.knob_current_pos != data.position.data:
             self.knob_current_pos = data.position.data
+            print("knob_current_pos:", self.knob_current_pos)
             self.knob_current_force = data.force.data
-            target_pos = self.home_pos
-            target_pos[self.ctrl_axis] = self.home_pos[self.ctrl_axis] + 0.01 * self.knob_current_pos
+            target_pos = [0.5, -0.2, 0.5, 0, 0, 0]
+            target_pos[self.ctrl_axis] = target_pos[self.ctrl_axis] + 0.01 * self.knob_current_pos
             if not self.move_arm_cartesian(target_pos):
                 rospy.loginfo("Failed to send move position to robot: ...")
 

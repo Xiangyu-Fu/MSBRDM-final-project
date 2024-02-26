@@ -53,6 +53,11 @@ catkin build
 > Note: If you face any issues with the build, please first see the [Issue #35](https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35).
 
 
+## Knob
+
+```bash
+roslaunch knob_robot_control rosserial.launch
+```
 
 ## Run the Test Environment
 Please follow the following commands:
