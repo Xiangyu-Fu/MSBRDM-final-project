@@ -28,6 +28,9 @@ class Ui_MainWindow(object):
         self.ur10_joint_cur = None
         self.ur10_cart_cur = None
 
+        self.ur10_cart_start = None
+        self.ur10_joint_start = None
+
         self.home_pos = [0.5, 0.0, 0.5, 0.0, 0.0, 0.0] 
         self.home_joint = [ math.radians(0),
                             math.radians(-70),
@@ -43,14 +46,14 @@ class Ui_MainWindow(object):
         # define the subscibers
         rospy.init_node("knob_gui")
 
-        self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback)
-        self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
+        self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback, queue_size=1)
+        # self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
 
         # ur10 sub
         self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback, queue_size=1)
         self.cart_state_sub = rospy.Subscriber("/end_effector_pose", PoseStamped, self.tcp_state_callback, queue_size=1)
 
-        self.knob_command_pub = rospy.Publisher("/knob_command", KnobCommand, queue_size=10)
+        self.knob_command_pub = rospy.Publisher("/knob_command", KnobCommand, queue_size=1)
 
         # # Create a new thread to run the ROS spin loop
         # ros_thread = Thread(target=rospy.spin)
@@ -486,8 +489,17 @@ class Ui_MainWindow(object):
             rospy.logerr("Service call failed:", e)
             return False
 
-    def move_arm_joint(self, joint0, joint1, joint2, joint3, joint4, joint5) -> str:
+    def move_arm_joint(self, joints) -> bool:
         rospy.wait_for_service('move_arm_joint')
+        if len(joints) != 6:
+            rospy.logerr("wrong joint nums")
+            return False
+        joint0 = joints[0]
+        joint1 = joints[1]
+        joint2 = joints[2]
+        joint3 = joints[3]
+        joint4 = joints[4]
+        joint5 = joints[5]
         try:
             move_arm_joint = rospy.ServiceProxy('move_arm_joint', MoveArmJoint)
             response = move_arm_joint(joint0, joint1, joint2, joint3, joint4, joint5)
@@ -578,14 +590,24 @@ class Ui_MainWindow(object):
             # self.update_chart_tcp(current_force)
             self.publish_force(clamp_force)
 
-    def knob_state_callback(self, data) -> None:
-        if self.ur10_cart_cur is not None:
+    def knob_state_callback(self, data) -> None: 
+        if self.ur10_cart_cur is None:
+            rospy.logwarn("Waiting for impedance controller start ...")
+            rospy.sleep(1)
+        elif self.ur10_cart_start is None:
+            rospy.logwarn("Please push the mode publish button !")
+            rospy.sleep(1)
+        else:
             # if knob state changed, then send the command to the robot
             if self.knob_current_pos != data.position.data:
                 CONTROL_MODE, TCP_AXIS, CONTROL_JOINT = self.check_current_selections()
                 if CONTROL_MODE == "JOINT":
-                    joints = self.ur10_joint_start.position
-                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.01 * data.position.data
+                    self.knob_current_pos = data.position.data
+                    self.knob_current_force = data.force.data
+
+                    joints = list(self.ur10_joint_start)
+                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.1 * data.position.data
+                    self.move_arm_joint(joints)
                     print("\r",joints, "                      ", end="")
                     return
                 elif CONTROL_MODE == "TCP":
@@ -598,9 +620,6 @@ class Ui_MainWindow(object):
                 else:
                     rospy.logerr("Unknown mode: {}".format(CONTROL_MODE))
                     return
-        else:
-            rospy.logwarn("UR10 current position is not available yet.")
-            rospy.logwarn("Please run the impedance controller.")
 
     def joint_state_callback(self, data) -> None:
         # update the joint state
@@ -621,10 +640,10 @@ class Ui_MainWindow(object):
         rospy.sleep(0.4)
 
     def mode_change_callback(self, data) -> None:
+
         self.ur10_cart_start = self.ur10_cart_cur
         self.ur10_joint_start = self.ur10_joint_cur
-
-        print(self.ur10_joint_start)
+        # TODO: reset KNOB CONTROL MODE
 
 
 
@@ -640,6 +659,6 @@ if __name__ == "__main__":
     ui.setup_ROS()
 
     MainWindow.show()
-    rospy.spin()
+    # rospy.spin()
     
     sys.exit(app.exec_())

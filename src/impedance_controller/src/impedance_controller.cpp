@@ -131,7 +131,6 @@ namespace tum_ics_ur_robot_lli
 
       spline_period_ = max_diff * 3;
 
-      ROS_WARN_STREAM("Switching to JOINT mode");
       return true;
     }
 
@@ -354,8 +353,6 @@ namespace tum_ics_ur_robot_lli
         ee_pose_pub_.publish(ee_pose_msg);
       }
 
-
-
       if(control_mode_ != CARTESIAN)
       {
         ROS_INFO_STREAM_THROTTLE(1, "EE POS: " << X_ee.translation().transpose());
@@ -415,6 +412,7 @@ namespace tum_ics_ur_robot_lli
 
       //////////////////////////////
       // JOINT MODE
+      // FIXME: FIX JOINT MODE
       //////////////////////////////
       else if(control_mode_ == JOINT)
       {

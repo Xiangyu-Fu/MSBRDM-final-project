@@ -10,7 +10,7 @@ impedance_ctrl:
   gains_d_cart: [20, 20, 20, 20, 20, 20]
 
   #integral
-  gains_i: [1,10,10,5,1,1]
+  gains_i: [1,1,1,1,1,1]
   gains_i_cart: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
 
   # Desired position in deg [J1, J2, J3, J4, J5, J6], e.g. [90, -45, 30, -70, 40, 40]
