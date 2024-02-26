@@ -350,7 +350,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "Force Testing"))
         self.pushButton_2.clicked.connect(self.force_testing)
         self.pushButton_3.setText(_translate("MainWindow", "Mode Publish"))
-        self.pushButton_3.clicked.connect(self.publish_force)
+        self.pushButton_3.clicked.connect(self.mode_change_callback)
 
         # Labels
         self.label_9.setText(_translate("MainWindow", "Mode Publisher"))
@@ -579,28 +579,32 @@ class Ui_MainWindow(object):
             self.publish_force(clamp_force)
 
     def knob_state_callback(self, data) -> None:
-        # if knob state changed, then send the command to the robot
-        if self.knob_current_pos != data.position.data:
-            CONTROL_MODE, TCP_AXIS, CONTROL_JOINT = self.check_current_selections()
-            if CONTROL_MODE == "JOINT":
-                joints = self.ur10_joint_start.position
-                joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.01 * data.position.data
-                print("\r",joints, "                      ", end="")
-                return
-            elif CONTROL_MODE == "TCP":
-                self.knob_current_pos = data.position.data
-                self.knob_current_force = data.force.data
+        if self.ur10_cart_cur is not None:
+            # if knob state changed, then send the command to the robot
+            if self.knob_current_pos != data.position.data:
+                CONTROL_MODE, TCP_AXIS, CONTROL_JOINT = self.check_current_selections()
+                if CONTROL_MODE == "JOINT":
+                    joints = self.ur10_joint_start.position
+                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.01 * data.position.data
+                    print("\r",joints, "                      ", end="")
+                    return
+                elif CONTROL_MODE == "TCP":
+                    self.knob_current_pos = data.position.data
+                    self.knob_current_force = data.force.data
 
-                position = self.ur10_cart_start.pose.position
-                position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.002 * self.knob_current_pos
-                print("\r",position, "                      ", end="")
-            else:
-                rospy.logerr("Unknown mode: {}".format(CONTROL_MODE))
-                return
+                    position = self.ur10_cart_start.pose.position
+                    position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.002 * self.knob_current_pos
+                    print("\r",position, "                      ", end="")
+                else:
+                    rospy.logerr("Unknown mode: {}".format(CONTROL_MODE))
+                    return
+        else:
+            rospy.logwarn("UR10 current position is not available yet.")
+            rospy.logwarn("Please run the impedance controller.")
 
     def joint_state_callback(self, data) -> None:
         # update the joint state
-        self.ur10_joint_cur = data
+        self.ur10_joint_cur = data.position
         self.doubleSpinBox_14.setValue(data.position[0])
         self.doubleSpinBox_15.setValue(data.position[1])
         self.doubleSpinBox_13.setValue(data.position[2])
@@ -610,7 +614,7 @@ class Ui_MainWindow(object):
         rospy.sleep(0.4)
         
     def tcp_state_callback(self, data) -> None:
-        self.ur10_cart_cur=data
+        self.ur10_cart_cur=data.pose
         self.text_line_edit.setValue(data.pose.position.x)
         self.doubleSpinBox_8.setValue(data.pose.position.y)
         self.doubleSpinBox_9.setValue(data.pose.position.z)
@@ -620,7 +624,7 @@ class Ui_MainWindow(object):
         self.ur10_cart_start = self.ur10_cart_cur
         self.ur10_joint_start = self.ur10_joint_cur
 
-        print()
+        print(self.ur10_joint_start)
 
 
 
