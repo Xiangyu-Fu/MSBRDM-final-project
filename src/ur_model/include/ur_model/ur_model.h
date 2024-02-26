@@ -6,7 +6,7 @@
  *
  * \date 17/02/2024
  *
- * \copyright Your Copyright
+ * \copyright 
  *
  * License details.
  *
@@ -21,14 +21,14 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <ros/ros.h>
-#include <ur_model/model_base.h>
+#include <ur_model/robot_base.h>
 #include <ros/node_handle.h>
 #include <control_core/types.h>
 
 
-namespace ur_model_namespace
+namespace tum_ics_ur_model
 {
-    class URModel : public model_interface::ModelBase
+    class URModel : public tum_ics_ur_robot_base::RobotBase
     {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Variable
@@ -42,7 +42,7 @@ namespace ur_model_namespace
         // Types
         ////////////////////////////////
 
-        typedef model_interface::ModelBase Base;
+        typedef tum_ics_ur_robot_base::RobotBase Base;
         typedef cc::VectorX Regressor_Theta;    // 61*1
         typedef cc::MatrixX Regressor_Yr;       // 6*61
         
@@ -229,7 +229,7 @@ namespace ur_model_namespace
 
     };
 
-} // namespace ur_model_namespace
+} // namespace tum_ics_ur_model
 
 #endif // UR_MODEL_H
 

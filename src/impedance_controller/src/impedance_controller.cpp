@@ -197,7 +197,7 @@ namespace tum_ics_ur_robot_lli
       }
 
       // FIXME: init model
-      if (!model_.initRequest(nh_)) 
+      if (!model_.is_Initialized(nh_)) 
       {
         ROS_ERROR_STREAM("ERORR: initializing model failed!");
         m_error = true;
