@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # Author: Xiangyu Fu
-# Date: 2023-09-10
+# Date: 2024-02-26
+
 import sys
 import math
 import rospy
 from knob_robot_control.msg import KnobState, KnobCommand
 from std_msgs.msg import String, Int32, Float32
 from threading import Lock, Thread
-from geometry_msgs.msg import WrenchStamped
+from geometry_msgs.msg import WrenchStamped, Pose, PoseStamped, Point, Quaternion, Vector3
 from sensor_msgs.msg import JointState
+from impedance_controller.srv import MoveArmCartesian, MoveArmJoint
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QDoubleSpinBox, QLabel, QLineEdit
@@ -23,18 +25,49 @@ class Ui_MainWindow(object):
         self.knob_current_force = None
         self.tcp_wrench = None
 
+        self.ur10_joint_cur = None
+        self.ur10_cart_cur = None
+
+        self.home_pos = [0.5, 0.0, 0.5, 0.0, 0.0, 0.0] 
+        self.home_joint = [ math.radians(0),
+                            math.radians(-70),
+                            math.radians(-110),
+                            math.radians(-90),
+                            math.radians(90),
+                            math.radians(0)]
+        
+    """
+    ROS SETUP
+    """
     def setup_ROS(self):
         # define the subscibers
-        rospy.init_node("knob_gui", anonymous=True)
+        rospy.init_node("knob_gui")
 
         self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback)
         self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
-        self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback)
+
+        # ur10 sub
+        self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback, queue_size=1)
+        self.cart_state_sub = rospy.Subscriber("/end_effector_pose", PoseStamped, self.tcp_state_callback, queue_size=1)
+
         self.knob_command_pub = rospy.Publisher("/knob_command", KnobCommand, queue_size=10)
 
+        # # Create a new thread to run the ROS spin loop
+        # ros_thread = Thread(target=rospy.spin)
+        # ros_thread.start()
+
+        # shutdown the ros node when the window is closed
+        # rospy.on_shutdown(self.shutdown)
+
+    def shutdown(self):
+        rospy.signal_shutdown("shutdown")
+
+    """
+    UI SETUP
+    """
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1235, 597)
+        MainWindow.resize(800, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.line = QtWidgets.QFrame(self.centralwidget)
@@ -77,16 +110,19 @@ class Ui_MainWindow(object):
         self.text_line_edit.setEnabled(True)
         self.text_line_edit.setReadOnly(True)
         self.text_line_edit.setObjectName("text_line_edit")
+        self.text_line_edit.setMinimum(-10)
         self.horizontalLayout.addWidget(self.text_line_edit)
         self.doubleSpinBox_8 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_8.setEnabled(True)
         self.doubleSpinBox_8.setReadOnly(True)
         self.doubleSpinBox_8.setObjectName("doubleSpinBox_8")
+        self.doubleSpinBox_8.setMinimum(-10)
         self.horizontalLayout.addWidget(self.doubleSpinBox_8)
         self.doubleSpinBox_9 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_9.setEnabled(True)
         self.doubleSpinBox_9.setReadOnly(True)
         self.doubleSpinBox_9.setObjectName("doubleSpinBox_9")
+        self.doubleSpinBox_9.setMinimum(-10)
         self.horizontalLayout.addWidget(self.doubleSpinBox_9)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -102,16 +138,19 @@ class Ui_MainWindow(object):
         self.doubleSpinBox_14.setEnabled(True)
         self.doubleSpinBox_14.setReadOnly(True)
         self.doubleSpinBox_14.setObjectName("doubleSpinBox_14")
+        self.doubleSpinBox_14.setMinimum(-10) 
         self.horizontalLayout_2.addWidget(self.doubleSpinBox_14)
         self.doubleSpinBox_15 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_15.setEnabled(True)
         self.doubleSpinBox_15.setReadOnly(True)
         self.doubleSpinBox_15.setObjectName("doubleSpinBox_15")
+        self.doubleSpinBox_15.setMinimum(-10) 
         self.horizontalLayout_2.addWidget(self.doubleSpinBox_15)
         self.doubleSpinBox_13 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_13.setEnabled(True)
         self.doubleSpinBox_13.setReadOnly(True)
         self.doubleSpinBox_13.setObjectName("doubleSpinBox_13")
+        self.doubleSpinBox_13.setMinimum(-10)
         self.horizontalLayout_2.addWidget(self.doubleSpinBox_13)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
@@ -120,16 +159,19 @@ class Ui_MainWindow(object):
         self.doubleSpinBox_16.setEnabled(True)
         self.doubleSpinBox_16.setReadOnly(True)
         self.doubleSpinBox_16.setObjectName("doubleSpinBox_16")
+        self.doubleSpinBox_16.setMinimum(-10)
         self.horizontalLayout_3.addWidget(self.doubleSpinBox_16)
         self.doubleSpinBox_17 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_17.setEnabled(True)
         self.doubleSpinBox_17.setReadOnly(True)
         self.doubleSpinBox_17.setObjectName("doubleSpinBox_17")
+        self.doubleSpinBox_17.setMinimum(-10)
         self.horizontalLayout_3.addWidget(self.doubleSpinBox_17)
         self.doubleSpinBox_18 = QtWidgets.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_18.setEnabled(True)
         self.doubleSpinBox_18.setReadOnly(True)
         self.doubleSpinBox_18.setObjectName("doubleSpinBox_18")
+        self.doubleSpinBox_18.setMinimum(-10)
         self.horizontalLayout_3.addWidget(self.doubleSpinBox_18)
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         self.horizontalLayout_4.addLayout(self.verticalLayout_2)
@@ -279,7 +321,6 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
     def retranslateUi(self, MainWindow) -> None:
         """
         This function is responsible for setting up the user interface of the MainWindow.
@@ -315,7 +356,7 @@ class Ui_MainWindow(object):
         self.label_9.setText(_translate("MainWindow", "Mode Publisher"))
         self.label_10.setText(_translate("MainWindow", "State Monitor"))
         self.label_11.setText(_translate("MainWindow", "Control Mode"))
-        self.label_7.setText(_translate("MainWindow", "CART Position"))
+        self.label_7.setText(_translate("MainWindow", "Cartesian"))
         self.label_8.setText(_translate("MainWindow", "Joints"))
         self.label.setText(_translate("MainWindow", "Num Positions"))
         self.label_2.setText(_translate("MainWindow", "Positions"))
@@ -344,6 +385,9 @@ class Ui_MainWindow(object):
         self.radioButton_11.setText(_translate("MainWindow", "Joint 6"))
         self.radioButton_7.setChecked(True)
 
+    """
+    UPDATE CHART(DISCARDED)
+    """
     def update_chart_tcp(self, value) -> None:
         """
         Update the chart with a new EE value.
@@ -380,6 +424,9 @@ class Ui_MainWindow(object):
             self.axisX.setRange(current_count - 100, current_count)
             self.axisY.setRange(-10, 10) ## need to be change
 
+    """
+    UTILITIES
+    """
     def check_current_selections(self) -> tuple:
         # Checking Mode
         if self.radioButton.isChecked():
@@ -420,23 +467,58 @@ class Ui_MainWindow(object):
             self.knob_command_pub.publish(knob_command)
             rospy.sleep(0.01)
 
+    """
+    SERVICE CALLS
+    """
+    def move_arm_cartesian(self, pose) -> str:
+        rospy.wait_for_service('move_arm_cartesian')
+        x = pose[0]
+        y = pose[1]
+        z = pose[2]
+        rx = pose[3]
+        ry = pose[4]
+        rz = pose[5]
+        try:
+            move_arm_cartesian = rospy.ServiceProxy('move_arm_cartesian', MoveArmCartesian)
+            response = move_arm_cartesian(x, y, z, rx, ry, rz)
+            return True
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed:", e)
+            return False
+
+    def move_arm_joint(self, joint0, joint1, joint2, joint3, joint4, joint5) -> str:
+        rospy.wait_for_service('move_arm_joint')
+        try:
+            move_arm_joint = rospy.ServiceProxy('move_arm_joint', MoveArmJoint)
+            response = move_arm_joint(joint0, joint1, joint2, joint3, joint4, joint5)
+            return True
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed:", e)
+            return False
+
+    def move_arm_cartesian_home(self) -> None:
+        self.move_arm_cartesian(self.home_pos[0],
+                                self.home_pos[1],
+                                self.home_pos[2],
+                                self.home_pos[3],
+                                self.home_pos[4],
+                                self.home_pos[5])
+
+    def move_arm_cartesian_joint(self) -> None: 
+        self.move_arm_joint(self.home_joint[0],
+                                    self.home_joint[1],
+                                    self.home_joint[2],
+                                    self.home_joint[3],
+                                    self.home_joint[4],
+                                    self.home_joint[5])
+
+    """
+    PUBLICHERS
+    """
     def publish_force(self, force=1.0) -> None:
         knob_command = KnobCommand()
         knob_command.text.data = "force"
         knob_command.tcp_force.data = float(force)
-        self.knob_command_pub.publish(knob_command)
-
-    def publish_knob_command(self) -> None:  
-        knob_command = KnobCommand()
-        knob_command.header.stamp = rospy.Time.now()
-        knob_command.num_positions.data = int(self.num_positions_spinbox.value())
-        knob_command.position.data = int(self.position_spinbox.value())
-        knob_command.position_width_radians.data = float(self.position_width_radians_spinbox.value())
-        knob_command.detent_strength_unit.data = float(self.detent_strength_unit_spinbox.value())
-        knob_command.endstop_strength_unit.data = float(self.endstop_strength_unit_spinbox.value())
-        knob_command.snap_point.data = float(self.snap_point_spinbox.value())
-        knob_command.text.data = self.text_line_edit.text()
-        knob_command.tcp_force.data = float(1.0)    
         self.knob_command_pub.publish(knob_command)
 
     def change_knob_state(self) -> None:
@@ -452,6 +534,22 @@ class Ui_MainWindow(object):
         knob_command.text.data = "Bounded 0-10\nNo detents"
         self.knob_command_pub.publish(knob_command)
 
+    def publish_knob_command(self) -> None:  
+        knob_command = KnobCommand()
+        knob_command.header.stamp = rospy.Time.now()
+        knob_command.num_positions.data = int(self.num_positions_spinbox.value())
+        knob_command.position.data = int(self.position_spinbox.value())
+        knob_command.position_width_radians.data = float(self.position_width_radians_spinbox.value())
+        knob_command.detent_strength_unit.data = float(self.detent_strength_unit_spinbox.value())
+        knob_command.endstop_strength_unit.data = float(self.endstop_strength_unit_spinbox.value())
+        knob_command.snap_point.data = float(self.snap_point_spinbox.value())
+        knob_command.text.data = self.text_line_edit.text()
+        knob_command.tcp_force.data = float(1.0)    
+        self.knob_command_pub.publish(knob_command)
+
+    """
+    CALLBACKS 
+    """
     def tcp_wrench_callback(self, data) -> None:    
         """
         tcp_wrench_callback
@@ -477,44 +575,54 @@ class Ui_MainWindow(object):
                 # clamp the force to (0, 3)
                 clamp_force = max(1, min(abs(current_force)/10, 4))
 
-            self.update_chart_tcp(current_force)
+            # self.update_chart_tcp(current_force)
             self.publish_force(clamp_force)
 
     def knob_state_callback(self, data) -> None:
-        self.update_chart_knob(data)
         # if knob state changed, then send the command to the robot
         if self.knob_current_pos != data.position.data:
             CONTROL_MODE, TCP_AXIS, CONTROL_JOINT = self.check_current_selections()
             if CONTROL_MODE == "JOINT":
-                rospy.logwarn("Future work: joint mode is not supported yet.")
+                joints = self.ur10_joint_start.position
+                joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.01 * data.position.data
+                print("\r",joints, "                      ", end="")
                 return
             elif CONTROL_MODE == "TCP":
                 self.knob_current_pos = data.position.data
                 self.knob_current_force = data.force.data
-                position = [-0.0827, 0.7009, 0.2761]
-                position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.001 * self.knob_current_pos
+
+                position = self.ur10_cart_start.pose.position
+                position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.002 * self.knob_current_pos
                 print("\r",position, "                      ", end="")
-                # if not self.sendMoveCartesianLin(position, [0.0, -0.0, 3.14]):
-                #     rospy.loginfo("Failed to send move position to robot: ...")
             else:
                 rospy.logerr("Unknown mode: {}".format(CONTROL_MODE))
                 return
 
     def joint_state_callback(self, data) -> None:
         # update the joint state
-        print(data.position)
+        self.ur10_joint_cur = data
         self.doubleSpinBox_14.setValue(data.position[0])
         self.doubleSpinBox_15.setValue(data.position[1])
         self.doubleSpinBox_13.setValue(data.position[2])
         self.doubleSpinBox_16.setValue(data.position[3])
         self.doubleSpinBox_17.setValue(data.position[4])
         self.doubleSpinBox_18.setValue(data.position[5])
+        rospy.sleep(0.4)
         
-
     def tcp_state_callback(self, data) -> None:
-        self.text_line_edit.setValue(data.x)
-        self.doubleSpinBox_8.setValue(data.y)
-        self.doubleSpinBox_9.setValue(data.z)
+        self.ur10_cart_cur=data
+        self.text_line_edit.setValue(data.pose.position.x)
+        self.doubleSpinBox_8.setValue(data.pose.position.y)
+        self.doubleSpinBox_9.setValue(data.pose.position.z)
+        rospy.sleep(0.4)
+
+    def mode_change_callback(self, data) -> None:
+        self.ur10_cart_start = self.ur10_cart_cur
+        self.ur10_joint_start = self.ur10_joint_cur
+
+        print()
+
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -528,4 +636,6 @@ if __name__ == "__main__":
     ui.setup_ROS()
 
     MainWindow.show()
+    rospy.spin()
+    
     sys.exit(app.exec_())

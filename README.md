@@ -54,7 +54,7 @@ catkin build
 
 
 ## Knob
-
+Check the IP addr
 ```bash
 roslaunch knob_robot_control rosserial.launch
 ```

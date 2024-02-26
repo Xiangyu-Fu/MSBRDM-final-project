@@ -11,7 +11,6 @@
  * License details.
  *
  */
-
 #ifndef UR_MODEL_H
 #define UR_MODEL_H
 
