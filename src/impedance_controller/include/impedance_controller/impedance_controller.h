@@ -8,8 +8,6 @@
 #include "geometry_msgs/WrenchStamped.h"
 #include <ros/ros.h>
 #include <Eigen/Dense>
-
-// FIXME: use blue_controller/BlueControl.h as a template
 #include <ur_6dof/ur_6dof.h>
 
 namespace tum_ics_ur_robot_lli
@@ -68,7 +66,7 @@ namespace tum_ics_ur_robot_lli
       Vector6d joint_error_;
       Vector6d joint_dot_error_;
 
-      // FIXME: params for cartesian control
+      // params for cartesian control
       bool is_first_iter_cart_;
       std::string ns_;
       Matrix6d Kp_cart_;
