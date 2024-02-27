@@ -481,9 +481,9 @@ namespace tum_ics_ur_robot_lli
         x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
 
         // get model
-        auto X_ee = model_.T_ef_0(state.q);
-        auto Jef = model_.J_ef_0(state.q);
-        auto Jef_dot = model_.Jp_ef_0(state.q, state.qp);
+        auto X_ee = model_.Tef_0(state.q);
+        auto Jef = model_.Jef_0(state.q);
+        auto Jef_dot = model_.Jef_0_dot(state.q, state.qp);
 
         // current cartesian state
         cc::CartesianState x_current;
@@ -509,7 +509,7 @@ namespace tum_ics_ur_robot_lli
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
         Vector6d Sq = state.qp - Qrp;
-        const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
+        const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
@@ -527,7 +527,7 @@ namespace tum_ics_ur_robot_lli
 
         // get the desired cartesian state
         cc::CartesianState x_desired_cur;
-        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
+        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_, dt);
 
         // low pass filter
         if(is_first_iter_cart_)
