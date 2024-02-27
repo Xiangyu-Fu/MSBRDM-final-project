@@ -3,11 +3,11 @@
 impedance_ctrl: 
   #proportional
   gains_p: [80, 600, 600, 150, 40, 5]
-  gains_p_cart: [10, 10, 10, 1, 1, 1]
+  gains_p_cart: [5, 5, 5, 1, 1, 1]
 
   #derivative
   gains_d: [75, 75, 75, 73, 15, 5]
-  gains_d_cart: [10, 10, 10, 10, 10, 10]
+  gains_d_cart: [5, 5, 5, 10, 10, 10]
   #integral
   gains_i: [1,5,5,2,1,1]
   gains_i_cart: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
