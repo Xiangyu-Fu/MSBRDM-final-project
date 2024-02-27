@@ -20,23 +20,18 @@ class KnobGui(Ui_MainWindow):
     def __init__(self) -> None:
         super().__init__()
 
-        # define the subscibers
-        self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback)
-        self.knob_command_pub = rospy.Publisher("/knob_command", KnobCommand, queue_size=10)
-
-        # ur10 sub
-        self.joint_states_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback)
-        self.cart_states_sub = rospy.Subscriber("/end_effector_pose", PoseStamped, self.tcp_state_callback)
-
-        # FT sensor
-        self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
-
         self.knob_current_pos = None
         self.knob_current_force = None
         self.tcp_wrench = None
 
         if rospy.is_shutdown():
             return
+        
+    def test_callback(self, data) -> None: 
+        # print("test callback: ", data)
+        rospy.sleep(0.1)
+        pass
+
 
     def knob_state_callback(self, data) -> None:
         # if knob state changed, then send the command to the robot
@@ -81,6 +76,7 @@ if __name__ == "__main__":
         ui = Ui_MainWindow()
         ui.setupUi(MainWindow)
         MainWindow.show()
+        ui.setup_ROS()
     except rospy.ROSInterruptException:
         pass
 
