@@ -78,11 +78,25 @@ namespace tum_ics_ur_robot_lli
 
       ee_start_.pos().linear() = T_ef_0.translation();
       ee_start_.pos().angular() = T_ef_0.rotation();
+      ROS_INFO_STREAM("TT_ef_0.rotation(): " << T_ef_0.rotation());
 
       // set the goal
       ee_goal_.pos().linear() << req.x, req.y, req.z;
       // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
-      ee_goal_.pos().angular() = Eigen::Quaterniond(1, 0, 0, 0);
+      Eigen::Matrix3d rotation_matrix = T_ef_0.rotation();;
+      rotation_matrix <<0.0,0.0, -0.999999,
+                        -0.5, 0.0,0.0,
+                        0.0,-0.5, 0.0;
+      // for (int i = 0; i < rotation_matrix.rows(); ++i) {
+      //     for (int j = 0; j < rotation_matrix.cols(); ++j) {
+      //         rotation_matrix(i, i) -= 0.0000001;
+      //     }
+      // }
+                        
+      ROS_INFO_STREAM_THROTTLE(1, " rotation: " << rotation_matrix);
+
+      ee_goal_.pos().angular() = rotation_matrix;
+
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
       spline_period_ = 0.3;
@@ -453,8 +467,8 @@ namespace tum_ics_ur_robot_lli
         tau.setZero();
 
         // get the desired cartesian state
-        cc::CartesianState x_desired_cur;
-        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
+        cc::CartesianState x_desired_cur;//VVector6d x_desired_cur;
+        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_,dt);
 
         // low pass filter
         if(is_first_iter_cart_)
@@ -554,17 +568,12 @@ namespace tum_ics_ur_robot_lli
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
         Vector6d Sq = state.qp - Qrp;
+        //ROS_INFO_STREAM_THROTTLE(1, " Sq: " << Sq);
+
+
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
         Vector6d tau_tracking = -Kd_cart_ * Sq + Yr * theta_;
-
-        // Get the nullspace stuff 
-        Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-        auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);
-        auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-        Vector6d task2 = Null_sp * tauTotalAvoid;
-
-        Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
 
         // tau = tau_tracking + tau_avoiding;
 
@@ -602,7 +611,7 @@ namespace tum_ics_ur_robot_lli
     }
 
     // TODO: add orientation spline
-    cc::CartesianState ImpedanceControl::genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period) {
+    cc::CartesianState ImpedanceControl::genTrajectoryEF(cc::CartesianState X_start, cc::CartesianState X_goal, double running_time, double spline_period,double dt) {
         cc::CartesianState X;
 
         double t = running_time;
@@ -644,11 +653,35 @@ namespace tum_ics_ur_robot_lli
             X = X_goal;
         }
 
-        X.pos().angular() = Eigen::Quaterniond(0, 0, 0, 0);
-        X.vel().angular() = Eigen::Vector3d::Zero();
-        X.acc().angular() = Eigen::Vector3d::Zero();
+        // Quaternion interpolation for angular part
+        double interpolation_factor = std::min(t / tf, 1.0);
+        Eigen::Quaterniond Q_start(X_start.pos().angular());
+        Eigen::Quaterniond Q_goal(X_goal.pos().angular());
+        Eigen::Quaterniond Q_interpolated = Q_start.slerp(interpolation_factor, Q_goal);
+        X.pos().angular() = Q_interpolated.toRotationMatrix();
+        // X.pos().angular() = Eigen::Quaterniond(0, 0, 0, 0);
+        //X.vel().angular() = Eigen::Vector3d::Zero();
+        //X.acc().angular() = Eigen::Vector3d::Zero();
+
+        // Approximate angular velocity and acceleration
+        Eigen::Quaterniond Q_prev = Q_start.slerp(std::max(0.0, (t - dt) / tf), Q_goal);
+        Eigen::Quaterniond Q_next = Q_start.slerp(std::min(1.0, (t + dt) / tf), Q_goal);
+
+        // Compute the finite difference for angular velocity
+        Eigen::AngleAxisd angleAxisVel(Q_prev.inverse() * Q_interpolated);
+        Eigen::Vector3d angularVel = angleAxisVel.axis() * angleAxisVel.angle() /10;// dt;
+
+        // Compute the finite difference for angular acceleration
+        Eigen::AngleAxisd angleAxisPrev(Q_prev.inverse() * Q_interpolated);
+        Eigen::AngleAxisd angleAxisNext(Q_interpolated.inverse() * Q_next);
+        Eigen::Vector3d angularAcc = (angleAxisNext.axis() * angleAxisNext.angle() - angleAxisPrev.axis() * angleAxisPrev.angle()) /10;//(dt * dt);
+
+        X.vel().angular() = angularVel;
+        X.acc().angular() = angularAcc;
+       
         return X;
     }
+
 
     bool ImpedanceControl::stop()
     {
