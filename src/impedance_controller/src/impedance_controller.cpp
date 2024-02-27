@@ -78,28 +78,36 @@ namespace tum_ics_ur_robot_lli
 
       ee_start_.pos().linear() = T_ef_0.translation();
       ee_start_.pos().angular() = T_ef_0.rotation();
-      ROS_INFO_STREAM("TT_ef_0.rotation(): " << T_ef_0.rotation());
+      // ROS_INFO_STREAM("TT_ef_0.rotation(): " << T_ef_0.rotation());
 
       // set the goal
       ee_goal_.pos().linear() << req.x, req.y, req.z;
       // ee_goal.angular() = Eigen:Quaterniond(Eigen::AngleAxisd(req.rz, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(req.ry, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(req.rx, Eigen::Vector3d::UnitX()));
       Eigen::Matrix3d rotation_matrix = T_ef_0.rotation();;
-      rotation_matrix <<0.0,0.0, -0.999999,
-                        -0.5, 0.0,0.0,
-                        0.0,-0.5, 0.0;
+      // rotation_matrix <<0.0,0.0, -0.999999,
+      //                   -0.5, 0.0,0.0,
+      //                   0.0,-0.5, 0.0;
       // for (int i = 0; i < rotation_matrix.rows(); ++i) {
       //     for (int j = 0; j < rotation_matrix.cols(); ++j) {
       //         rotation_matrix(i, i) -= 0.0000001;
       //     }
       // }
                         
-      ROS_INFO_STREAM_THROTTLE(1, " rotation: " << rotation_matrix);
 
       ee_goal_.pos().angular() = rotation_matrix;
 
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      spline_period_ = 10*dist;
+      if (dist < 0.3)
+      {
+        spline_period_ = 0.3; // avoid speed limit
+      }
+      else
+      {
+        spline_period_ = dist * 3;
+      }
+      
+      // std::cout << "spline_period_: " << spline_period_ << std::endl;
 
       // std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
       // std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
@@ -122,6 +130,7 @@ namespace tum_ics_ur_robot_lli
       ROS_INFO_STREAM("MoveArmJoint: " << req.joint0 << " " << req.joint1 << " " << req.joint2 << " " << req.joint3 << " " << req.joint4 << " " << req.joint5);
       control_mode_ = JOINT;
       running_time_ = 0.0;
+
       joint_error_ = Vector6d::Zero();
       q_start_ = joint_state_.q;
       q_goal_(0) = req.joint0;
