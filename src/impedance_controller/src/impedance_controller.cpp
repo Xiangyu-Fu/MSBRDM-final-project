@@ -417,7 +417,7 @@ namespace tum_ics_ur_robot_lli
         // Compute regressor for cartesian control
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        tau = -Kd_ * Sq + Yr * theta_;
+        tau = -Kd_ * Sq ;//+ Yr * theta_;
         return tau;
       }
 
@@ -453,7 +453,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq + Yr * theta_;
+        tau = -Kd_ * Sq ;//+ Yr * theta_;
         return tau;
       }
 
@@ -511,6 +511,7 @@ namespace tum_ics_ur_robot_lli
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
+        ROS_INFO_STREAM_THROTTLE(1, " theta: " << theta_);
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;
