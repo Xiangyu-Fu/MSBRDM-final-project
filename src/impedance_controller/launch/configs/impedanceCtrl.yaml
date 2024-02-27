@@ -2,15 +2,15 @@
 # P and D gains for each axis.
 impedance_ctrl: 
   #proportional
-  gains_p: [50, 600, 600, 150, 40, 5]
+  gains_p: [80, 600, 600, 150, 40, 5]
   gains_p_cart: [2, 2, 2, 2, 2, 2]
 
   #derivative
-  gains_d: [100, 200, 200, 73, 15, 5]
+  gains_d: [75, 75, 75, 73, 15, 5]
   gains_d_cart: [20, 20, 20, 20, 20, 20]
 
   #integral
-  gains_i: [1,10,10,5,1,1]
+  gains_i: [1,5,5,2,1,1]
   gains_i_cart: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
 
   # Desired position in deg [J1, J2, J3, J4, J5, J6], e.g. [90, -45, 30, -70, 40, 40]

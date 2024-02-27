@@ -53,6 +53,14 @@ catkin build
 > Note: If you face any issues with the build, please first see the [Issue #35](https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35).
 
 
+## Knob
+Check the IP addr
+```bash
+roslaunch tum_ics_ur10_bringup bringUR10.launch
+roslaunch knob_robot_control rosserial.launch
+rosrun knob_robot_control qt5_gui.py 
+roslaunch impedance_controller impedance_controller.launch
+```
 
 ## Run the Test Environment
 Please follow the following commands:

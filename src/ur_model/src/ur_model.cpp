@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 
 
-namespace ur_model_namespace
+namespace tum_ics_ur_model
 {
     //////////////////////////////////////////////////////////////////////////////////////////
     /// Initial
@@ -32,8 +32,8 @@ namespace ur_model_namespace
         ////////////////////////////////
         /// Initial Constant
         ////////////////////////////////
-        std::string ns = Base::name() + '/';
-        std::cout << "name: " << Base::name() << std::endl;
+        std::string ns = Base::get_name() + '/';
+        std::cout << "name: " << Base::get_name() << std::endl;
 
         // for (int i = 1; i <= 6; ++i) {
         //     cc::load(ns + "L" + std::to_string(i));
@@ -275,6 +275,6 @@ namespace ur_model_namespace
 
 
 
-} // namespace ur_model_namespace
+} // namespace tum_ics_ur_model
 
 // #endif // UR_MODEL_CPP
