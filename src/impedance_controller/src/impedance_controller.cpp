@@ -383,7 +383,7 @@ namespace tum_ics_ur_robot_lli
       //////////////////////////////
       // CONTROL MODE SWITCH
       //////////////////////////////
-      if(time.tD() > init_period_ + 1 && control_mode_ == INIT)
+      if(time.tD() > init_period_ + 5 && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
           // q_start_ = state.q;
