@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tf_conversions
-  ur_model
+  ur_6dof
   geometry_msgs
 )
 

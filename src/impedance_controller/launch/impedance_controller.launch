@@ -6,7 +6,7 @@
   <arg name="CONFIG_FILE_PATH" default="$(find impedance_controller)/launch/configs/configUR10.ini"/>
 
   <!-- FIXME: ur10 model parameters --> 
-  <rosparam file="$(find ur_model)/launch/configs/ur10_model.yaml" command="load" />
+  <rosparam file="$(find ur_6dof)/launch/configs/ur10_model.yaml" command="load" />
 
   <!-- the controller -->
   <node name="impedance_controller" pkg="impedance_controller" type="impedance_controller_node" args="$(arg CONFIG_FILE_PATH)" output="screen">

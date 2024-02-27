@@ -6,11 +6,11 @@
 #include "impedance_controller/MoveArmJoint.h"
 #include "impedance_controller/GetWrenchData.h"
 #include "geometry_msgs/WrenchStamped.h"
-#include<ros/ros.h>
+#include <ros/ros.h>
 #include <Eigen/Dense>
 
 // FIXME: use blue_controller/BlueControl.h as a template
-#include <ur_model/ur_model.h>
+#include <ur_6dof/ur_6dof.h>
 
 namespace tum_ics_ur_robot_lli
 {
