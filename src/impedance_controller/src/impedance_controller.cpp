@@ -444,9 +444,68 @@ namespace tum_ics_ur_robot_lli
       }
 
       //////////////////////////////
-      // TODO: CARTESIAN MODE
+      // CARTESIAN MODE
       //////////////////////////////
       else if(control_mode_ == CARTESIAN)
+      {
+        // control torque
+        Vector6d tau;
+        tau.setZero();
+
+        // get the desired cartesian state
+        cc::CartesianState x_desired_cur;
+        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_);
+
+        // low pass filter
+        if(is_first_iter_cart_)
+        {
+          x_desired_ = x_desired_cur;
+          is_first_iter_cart_ = false;
+        }
+        x_desired_.pos() = low_pass_factor_ * x_desired_.pos() + (1 - low_pass_factor_) * x_desired_cur.pos();
+        x_desired_.vel() = low_pass_factor_ * x_desired_.vel() + (1 - low_pass_factor_) * x_desired_cur.vel();
+        x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
+
+        // get model
+        auto X_ee = model_.T_ef_0(state.q);
+        auto Jef = model_.J_ef_0(state.q);
+        auto Jef_dot = model_.Jp_ef_0(state.q, state.qp);
+
+        // current cartesian state
+        cc::CartesianState x_current;
+        x_current.pos().linear() = X_ee.translation();
+        x_current.pos().angular() = X_ee.rotation();
+        x_current.vel() = Jef * state.qp;  // 6x1
+
+        ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
+
+        // X reference
+        cc::CartesianState Xr;
+        Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear());
+        Xr.vel().angular() = x_desired_.vel().angular();
+        Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear());
+        Xr.acc().angular() = x_desired_.acc().angular();
+
+        // Jacobian pesudo inverse
+        auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
+
+        // Q reference
+        Vector6d Qrp, Qrpp;
+        Qrp = Jef_pinv * Xr.vel();
+        Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
+
+        Vector6d Sq = state.qp - Qrp;
+        const auto& Yr = model_.regressor(state.q, state.qp, Qrp, Qrpp);
+        theta_ -= gamma_ * Yr.transpose() * Sq * dt;
+        tau = -Kd_cart_ * Sq + Yr * theta_;
+        // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
+        return tau;
+      }
+
+      //////////////////////////////
+      // TODO: IMPEDANCE MODE
+      //////////////////////////////
+      else if(control_mode_ == IMPEDANCE)
       {
         // control torque
         Vector6d tau;
