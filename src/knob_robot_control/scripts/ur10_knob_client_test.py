@@ -51,13 +51,13 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         sinusoidal_offset = 0.05*math.sin(frequency * t)
         traget_pos[0] = 0.47 + sinusoidal_offset
-        traget_pos[1] = -0.16 + sinusoidal_offset
-        traget_pos[2] = 0.6 + sinusoidal_offset
+        traget_pos[1] = -0.16 
+        traget_pos[2] = 0.6 
         print("traget_pos:", traget_pos)
         response_cartesian = move_arm_cartesian_client(traget_pos[0], traget_pos[1], traget_pos[2], traget_pos[3], traget_pos[4], traget_pos[5])
         # print("MoveArmCartesian response:", response_cartesian)
         t += 1
-        rospy.sleep(0.05)
+        rospy.sleep(0.2)
 
     # Example call to moveArmJoint service with sinusoidal wave added
     t = 0
