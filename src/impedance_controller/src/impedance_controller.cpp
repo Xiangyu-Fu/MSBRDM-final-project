@@ -502,11 +502,17 @@ namespace tum_ics_ur_robot_lli
 
         ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
 
+        // error
+        cart_error_.head(3) += (x_current.pos().linear() - x_desired_.pos().linear()) * dt;
+        cart_dot_error_.head(3) += (x_current.vel().linear() - x_desired_.vel().linear()) * dt;
+
+        ROS_INFO_STREAM_THROTTLE(1, " cart_error_: " << cart_error_.head(3).transpose());
+
         // X reference
         cc::CartesianState Xr;
-        Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear());
+        Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear()) - Ki_cart_.topLeftCorner(3, 3) * cart_error_.head(3);
         Xr.vel().angular() = Eigen::Vector3d::Zero();
-        Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear());
+        Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear()) - Ki_cart_.bottomRightCorner(3, 3) * cart_dot_error_.head(3);
         Xr.acc().angular() = Eigen::Vector3d::Zero();
 
         // Jacobian pesudo inverse
@@ -519,7 +525,7 @@ namespace tum_ics_ur_robot_lli
 
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
-        theta_ -=  0.1 * gamma_ * Yr.transpose() * Sq * dt;
+        theta_ -=  0.05 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;

@@ -72,10 +72,11 @@ namespace tum_ics_ur_robot_lli
       Matrix6d Kp_cart_;
       Matrix6d Kd_cart_;
       Matrix6d Ki_cart_;
-      Vector6d cart_error_;
       tum_ics_ur_model::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;
+      Vector6d cart_error_;
+      Vector6d cart_dot_error_;
       cc::CartesianState x_desired_;
 
       // params for Regressor
