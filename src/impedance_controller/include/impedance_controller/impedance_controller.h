@@ -20,11 +20,13 @@ namespace tum_ics_ur_robot_lli
     class ImpedanceControl : public ControlEffort
     {
     public:
-      enum Mode {INIT, JOINT, CARTESIAN, IMPEDANCE};
+      enum Mode {INIT, JOINT, CARTESIAN};
       
     private:
       bool is_first_iter_;
+      bool is_check_obst_;
 
+      Vector3d X_impendance_endpoint_;
       Vector6d q_start_;
       JointState q_init_;
       JointState q_home_;

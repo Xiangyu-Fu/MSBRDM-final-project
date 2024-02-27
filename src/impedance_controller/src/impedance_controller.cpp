@@ -327,6 +327,7 @@ namespace tum_ics_ur_robot_lli
         // Init mode
         control_mode_ = INIT;
         is_first_iter_ = false;
+        is_check_obst_ = false;
 
         // Init model
         theta_ = model_.Theta_function();
@@ -521,101 +522,44 @@ namespace tum_ics_ur_robot_lli
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -=  0.1 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
-        // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
-        return tau;
-      }
 
-      //////////////////////////////
-      // TODO: IMPEDANCE MODE
-      //////////////////////////////
-      else if(control_mode_ == IMPEDANCE)
-      {
-        // control torque
-        Vector6d tau;
-        tau.setZero();
-
-        // get the desired cartesian state
-        cc::CartesianState x_desired_cur;
-        x_desired_cur = genTrajectoryEF(ee_start_, ee_goal_, running_time_, spline_period_, dt);
-
-        // low pass filter
-        if(is_first_iter_cart_)
+        if (latest_wrench.wrench.force.z == 485)
         {
-          x_desired_ = x_desired_cur;
-          is_first_iter_cart_ = false;
-        }
-        x_desired_.pos() = low_pass_factor_ * x_desired_.pos() + (1 - low_pass_factor_) * x_desired_cur.pos();
-        x_desired_.vel() = low_pass_factor_ * x_desired_.vel() + (1 - low_pass_factor_) * x_desired_cur.vel();
-        x_desired_.acc() = low_pass_factor_ * x_desired_.acc() + (1 - low_pass_factor_) * x_desired_cur.acc();
-
-        // get model
-        auto X_ee = model_.Tef_0(state.q);
-        auto Jef = model_.Jef_0(state.q);
-        auto Jef_dot = model_.Jef_0_dot(state.q, state.qp);
-
-        // current cartesian state
-        cc::CartesianState x_current;
-        x_current.pos().linear() = X_ee.translation();
-        x_current.pos().angular() = X_ee.rotation();
-        x_current.vel() = Jef * state.qp;  // 6x1
-
-        ROS_INFO_STREAM_THROTTLE(1, " x_current: " << x_current.pos().linear().transpose());
-
-        // X reference
-        cc::CartesianState Xr;
-        Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear());
-        Xr.vel().angular() = x_desired_.vel().angular();
-        Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear());
-        Xr.acc().angular() = x_desired_.acc().angular();
-
-        // Jacobian pesudo inverse
-        auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
-
-        // Q reference
-        Vector6d Qrp, Qrpp;
-        Qrp = Jef_pinv * Xr.vel();
-        Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
-
-        Vector6d Sq = state.qp - Qrp;
-        //ROS_INFO_STREAM_THROTTLE(1, " Sq: " << Sq);
-
-
-        const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
-        theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        Vector6d tau_tracking = -Kd_cart_ * Sq + Yr * theta_;
-
-        // tau = tau_tracking + tau_avoiding;
-
-        if (latest_wrench.wrench.force.z >490)
-        {
+          if (is_check_obst_ == false)
+          {
+            is_check_obst_ = true;
+            X_impendance_endpoint_ = x_desired_cur.pos().linear() ;
+            // todo
+            X_impendance_endpoint_(2) -= 0.1;
+          }
+          
             ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
                 << latest_wrench.wrench.force.x << ", " 
                 << latest_wrench.wrench.force.y << ", " 
                 << latest_wrench.wrench.force.z << "] ");
           // Get the nullspace stuff 
-          Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-          auto tauTotalAvoid = computeImpedanceTau(state, X_avoidance_point, 2);//Fix
+          //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+          auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 2);//Fix
           auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
           Vector6d task2 = Null_sp * tauTotalAvoid;
 
           Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
           
-          tau = tau_tracking + tau_avoiding;
+          tau_avoiding.setZero();
+          tau_avoiding(2) = task2(2)*300000*2.5;
+
+          ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+          ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
+
+          tau += tau_avoiding;
+
+          ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
             
         }
-        else
-        {
-            ROS_INFO_STREAM_THROTTLE(1, "No significant force received.");
-            tau = tau_tracking;
-        }
-        // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
+
         return tau;
       }
-      else
-      {
-        ROS_ERROR_STREAM(" Unknown control mode");
-        return Vector6d::Zero();
-      }
+
 
     }
 
@@ -727,7 +671,7 @@ namespace tum_ics_ur_robot_lli
       else    // else we can set everything to zero 
           tau_red_i.setZero(); 
         
-      ROS_INFO_STREAM("Tau Avoidance joint i " << tau_red_i.transpose());
+      // ROS_INFO_STREAM("Tau Avoidance joint i " << tau_red_i.transpose());
 
       return tau_red_i;
     }
