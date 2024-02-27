@@ -99,7 +99,7 @@ namespace tum_ics_ur_robot_lli
 
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      spline_period_ = 0.3;
+      spline_period_ = 10*dist;
 
       // std::cout << "ee_start_.pos(): " << ee_start_.pos().linear().transpose() << std::endl;
       // std::cout << "ee_goal_.pos(): " << ee_goal_.pos().linear().transpose() << std::endl;
@@ -417,7 +417,7 @@ namespace tum_ics_ur_robot_lli
         // Compute regressor for cartesian control
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        tau = -Kd_ * Sq ;//+ Yr * theta_;
+        tau = -Kd_ * Sq + Yr * theta_;
         return tau;
       }
 
@@ -453,7 +453,7 @@ namespace tum_ics_ur_robot_lli
         // torque
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq ;//+ Yr * theta_;
+        tau = -Kd_ * Sq + Yr * theta_;
         return tau;
       }
 
@@ -496,9 +496,9 @@ namespace tum_ics_ur_robot_lli
         // X reference
         cc::CartesianState Xr;
         Xr.vel().linear() = x_desired_.vel().linear() - Kp_cart_.topLeftCorner(3, 3) * (x_current.pos().linear() - x_desired_.pos().linear());
-        Xr.vel().angular() = x_desired_.vel().angular();
+        Xr.vel().angular() = Eigen::Vector3d::Zero();
         Xr.acc().linear() = x_desired_.acc().linear() - Kp_cart_.bottomRightCorner(3, 3) * (x_current.vel().linear() - x_desired_.vel().linear());
-        Xr.acc().angular() = x_desired_.acc().angular();
+        Xr.acc().angular() = Eigen::Vector3d::Zero();
 
         // Jacobian pesudo inverse
         auto Jef_pinv =  Jef.transpose() * (Jef * Jef.transpose() + 0.001 * cc::Jacobian::Identity()).inverse();
@@ -510,8 +510,7 @@ namespace tum_ics_ur_robot_lli
 
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
-        theta_ -= gamma_ * Yr.transpose() * Sq * dt;
-        ROS_INFO_STREAM_THROTTLE(1, " theta: " << theta_);
+        theta_ -=  0.1 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, " tau cart size: " << tau);
         return tau;

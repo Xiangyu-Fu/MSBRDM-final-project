@@ -3,7 +3,7 @@
 impedance_ctrl: 
   #proportional
   gains_p: [80, 600, 600, 150, 40, 5]
-  gains_p_cart: [1, 1, 1, 1, 1, 1]
+  gains_p_cart: [10, 10, 10, 1, 1, 1]
 
   #derivative
   gains_d: [75, 75, 75, 73, 15, 5]
@@ -20,7 +20,7 @@ impedance_ctrl:
   init_period: 5.0
 
   # adaptive controller
-  learning_rate: 0.001
+  learning_rate: 50
 
   # low pass filter
   low_pass_factor: 0.99
