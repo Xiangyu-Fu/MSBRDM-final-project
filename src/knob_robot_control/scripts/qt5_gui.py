@@ -606,16 +606,20 @@ class Ui_MainWindow(object):
                     self.knob_current_force = data.force.data
 
                     joints = list(self.ur10_joint_start)
-                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.1 * data.position.data
+                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.02 * data.position.data
                     self.move_arm_joint(joints)
                     print("\r",joints, "                      ", end="")
                     return
                 elif CONTROL_MODE == "TCP":
                     self.knob_current_pos = data.position.data
                     self.knob_current_force = data.force.data
-
-                    position = self.ur10_cart_start.pose.position
-                    position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.002 * self.knob_current_pos
+                    
+                    position = [0, 0, 0, 0, 0, 0]
+                    position[0] = round(self.ur10_cart_start.position.x, 3)
+                    position[1] = round(self.ur10_cart_start.position.y, 3)
+                    position[2] = round(self.ur10_cart_start.position.z, 3)
+                    position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.02 * self.knob_current_pos
+                    self.move_arm_cartesian(position)
                     print("\r",position, "                      ", end="")
                 else:
                     rospy.logerr("Unknown mode: {}".format(CONTROL_MODE))
@@ -644,6 +648,18 @@ class Ui_MainWindow(object):
         self.ur10_cart_start = self.ur10_cart_cur
         self.ur10_joint_start = self.ur10_joint_cur
         # TODO: reset KNOB CONTROL MODE
+
+        knob_command = KnobCommand()
+        knob_command.header.stamp = rospy.Time.now()
+        knob_command.num_positions.data = 20
+        knob_command.position.data = 0
+        knob_command.position_width_radians.data = 10 * math.pi / 180
+        knob_command.detent_strength_unit.data = 1.0
+        knob_command.endstop_strength_unit.data = 1.0
+        knob_command.snap_point.data = 1.1
+        knob_command.text.data = "1.10"
+        knob_command.tcp_force.data = float(1.0)
+        self.knob_command_pub.publish(knob_command)
 
 
 

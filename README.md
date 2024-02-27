@@ -3,14 +3,15 @@
 ### TODO
 - [x] Add the ROS Service for Joint Control
 - [x] VS Code debugger for the ROS nodes
-- [ ] Add Gravity Compensation for joint control
-- [ ] Add the ROS Service for Cartesian Control
+- [x] Add the ROS Service for Cartesian Control
 - [ ] impedance controller for the end-effector
 - [ ] addmitance controller for the end-effector
+- [ ] orientation spline
+- [ ] Fix vibration of cartesian control
 
 ### BUGS
-- [ ] Vibrations when change the control mode
-- [ ] EE position is not accurate
+- [x] Vibrations when change the control mode
+- [x] EE position is not accurate
 
 ## Impedance Controller
 ### Run the Impedance Controller
