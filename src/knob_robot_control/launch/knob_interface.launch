@@ -3,3 +3,6 @@
 
     <node name="arm_control_client" pkg="knob_robot_control" type="qt5_gui.py" output="screen"/>
 </launch>
+
+    <node name="arm_control_client" pkg="knob_robot_control" type="qt5_gui.py" output="screen"/>
+</launch>

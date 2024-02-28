@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         rospy.init_node("knob_gui")
 
         self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback, queue_size=1)
-        self.tcp_wrench_sub = rospy.Subscriber("/schunk_netbox/raw", WrenchStamped, self.tcp_wrench_callback, queue_size=1)
+        self.tcp_wrench_sub = rospy.Subscriber("/schunk_netbox/raw", WrenchStamped, self.tcp_wrench_callback)
 
         # ur10 sub
         self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback, queue_size=1)
@@ -581,9 +581,11 @@ class Ui_MainWindow(object):
                 current_force = data.wrench.force.x
                 # clamp the force to (0, 3)
                 clamp_force = max(1, min(abs(current_force)/15, 4))
+                clamp_force = max(1, min(abs(current_force)/15, 4))
             elif TCP_AXIS == 1:
                 current_force = data.wrench.force.y
                 # clamp the force to (0, 3)
+                clamp_force = max(1, min(abs(current_force)/15, 4))
                 clamp_force = max(1, min(abs(current_force)/15, 4))
             else:
                 current_force = data.wrench.force.z
