@@ -106,6 +106,7 @@ Subscribers: None
 ## Run the Real Ur
 
 ```bash
+
 roscore
 
 roslaunch tum_ics_ur10_bringup bringUR10.launch
@@ -119,3 +120,16 @@ roslaunch tum_ics_schunk_netbox sensor_publisher.launch
 rosrun knob_robot_control fake_ft_pub.py
 
 ```
+
+
+rosservice call /move_arm_cartesian "{x: 0.4779, y: -0.1639, z: 0.610, rx: 0.0, ry: 0.0, rz: 0.0}"
+
+rosservice call /move_arm_cartesian "{x: 0.4779, y: -0.1639, z: 0.510, rx: 0.0, ry: 0.0, rz: 0.0}"
+
+rosservice call /move_arm_cartesian "{x: 0.4779, y: -0.1639, z: 0.710, rx: 0.0, ry: 0.0, rz: 0.0}"
+
+
+
+
+
+rosservice call /move_arm_cartesian "{x: 0.7779, y: -0.1639, z: 0.460, rx: 0.0, ry: 0.0, rz: 0.0}"
