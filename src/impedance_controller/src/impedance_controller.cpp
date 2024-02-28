@@ -548,7 +548,11 @@ namespace tum_ics_ur_robot_lli
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
 
-#if 0
+        if(std::abs(latest_wrench.wrench.force.z ) < 1 )
+        {
+          ROS_INFO_STREAM_THROTTLE(1, " please open FT");
+          return tau;
+        }
         if (  std::abs(latest_wrench.wrench.force.z - 485) > 5  && is_check_obst_ == false)
         // if (true)
         {
@@ -564,36 +568,65 @@ namespace tum_ics_ur_robot_lli
           is_check_obst_ = false;
         }
 
-        if (is_check_obst_ == true)
-        {
-          ROS_INFO_STREAM_THROTTLE(1, "Model: Impedance");
-          ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
-              << latest_wrench.wrench.force.x << ", " 
-              << latest_wrench.wrench.force.y << ", " 
-              << latest_wrench.wrench.force.z << "] ");
-          // Get the nullspace stuff 
-          //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-          auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
-          auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-          Vector6d task2 = Null_sp * tauTotalAvoid;
+        // if (is_check_obst_ == true)
+        // {
+        //   ROS_INFO_STREAM_THROTTLE(1, "Model: Impedance");
+        //   ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+        //       << latest_wrench.wrench.force.x << ", " 
+        //       << latest_wrench.wrench.force.y << ", " 
+        //       << latest_wrench.wrench.force.z << "] ");
+        //   // Get the nullspace stuff 
+        //   //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+        //   // auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
 
-          Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
+        //   Vector3d Force;
+        //   Vector6d tauTotalAvoid;
+        //   Force(0) = latest_wrench.wrench.force.x;
+        //   Force(1) = latest_wrench.wrench.force.y;
+        //   Force(2) = latest_wrench.wrench.force.z;
+        //   tauTotalAvoid = model_.Ji_0(state.q,5).block(0, 0, 0, 2).transpose() * Force;
+
+        //   auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+        //   Vector6d task2 = Null_sp * tauTotalAvoid;
+
+        //   Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
           
-          // tau_avoiding.setZero();
-          // tau_avoiding(2) = task2(2)*100*6;
+        //   // tau_avoiding.setZero();
+        //   // tau_avoiding(2) = task2(2)*100*6;
 
-          // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
-          tau_avoiding = tau_avoiding*500;
-          // ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
+        //   ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+        //   tau_avoiding = tau_avoiding*20;
+        //   ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
 
-          tau += tau_avoiding;
+        //   tau += tau_avoiding;
 
-          // ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
-        }else
-        {
-          ROS_INFO_STREAM_THROTTLE(1, "Model: Cartesian");
-        }
-#endif
+        //   // ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
+        // }else
+        // {
+        //   ROS_INFO_STREAM_THROTTLE(1, "Model: Cartesian");
+        // }
+
+        ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+            << latest_wrench.wrench.force.x << ", " 
+            << latest_wrench.wrench.force.y << ", " 
+            << latest_wrench.wrench.force.z << "] ");
+        Vector3d Force;
+        Vector6d tauTotalAvoid;
+        Force(0) = latest_wrench.wrench.force.x+131;
+        Force(1) = latest_wrench.wrench.force.y+76;
+        Force(2) = std::abs(latest_wrench.wrench.force.z - 485);
+        tauTotalAvoid = model_.Ji_0(state.q,5).block(0, 0, 0, 2).transpose() * Force;
+
+        auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+        Vector6d task2 = Null_sp * tauTotalAvoid;
+        Vector6d tau_avoiding = task2;
+
+        ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+        tau_avoiding = tau_avoiding*40*3;
+        ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
+
+        tau += tau_avoiding;
+
         return tau;
       }
 
@@ -705,9 +738,9 @@ namespace tum_ics_ur_robot_lli
         // F_red_i.x() = current_spingK.x() /  (X_red_ - T_i_0.position()).x();
         // F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
         // F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
-        // F_red_i.x() = - mag * 2 * diff(0);
-        // F_red_i.x() = - mag * 2 * diff(1);
-        F_red_i.x() = - mag * 2 * diff(2);
+        F_red_i.x() = - mag * 2 * diff(0);
+        F_red_i.y() = - mag * 2 * diff(1);
+        F_red_i.z() = - mag * 2 * diff(2);
 
         tau_red_i = model_.Ji_0(state.q,j).block(0, 0, 0, 2).transpose() * F_red_i;
       }
