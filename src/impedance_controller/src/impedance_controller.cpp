@@ -104,7 +104,7 @@ namespace tum_ics_ur_robot_lli
       }
       else
       {
-        spline_period_ = dist * 3;
+        spline_period_ = dist * 20;
       }
       
       // std::cout << "spline_period_: " << spline_period_ << std::endl;
@@ -457,13 +457,13 @@ namespace tum_ics_ur_robot_lli
         // reference
         JointState q_ref;
         q_ref = state;
-        q_ref.qp = q_desired_[1] - Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
-        q_ref.qpp = q_desired_[2] - Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
+        q_ref.qp = q_desired_[1] -  Kp_ * (state.q - q_desired_[0])- Ki_ * joint_error_;
+        q_ref.qpp = q_desired_[2] -  Kp_ * (state.qp - q_desired_[1])- Ki_ * joint_dot_error_;
 
         // torque
         const auto& Yr = model_.Yr_function(state.q, state.qp, q_ref.qp, q_ref.qpp);
         Vector6d Sq = state.qp - q_ref.qp;
-        tau = -Kd_ * Sq + Yr * theta_;
+        tau = - Kd_ * Sq + Yr * theta_;
         return tau;
       }
 
