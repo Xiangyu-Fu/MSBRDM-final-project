@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         rospy.init_node("knob_gui")
 
         self.knob_state_sub = rospy.Subscriber("/knob_state", KnobState, self.knob_state_callback, queue_size=1)
-        # self.tcp_wrench_sub = rospy.Subscriber("/tcp_wrench", WrenchStamped, self.tcp_wrench_callback)
+        self.tcp_wrench_sub = rospy.Subscriber("/schunk_netbox/raw", WrenchStamped, self.tcp_wrench_callback, queue_size=1)
 
         # ur10 sub
         self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_callback, queue_size=1)
@@ -487,6 +487,7 @@ class Ui_MainWindow(object):
             return True
         except rospy.ServiceException as e:
             rospy.logwarn("Service call failed:", e)
+            rospy.logwarn("Service call failed:", e)
             return False
 
     def move_arm_joint(self, joints) -> bool:
@@ -573,22 +574,25 @@ class Ui_MainWindow(object):
         """
         # add a threshold, if the force is larger than the threshold, then print the force
         CONTROL_MODE, TCP_AXIS, CONTROL_JOINT = self.check_current_selections()
+        TCP_AXIS = 2
+        # 
         if CONTROL_MODE == "TCP":
             if TCP_AXIS == 0:
                 current_force = data.wrench.force.x
                 # clamp the force to (0, 3)
-                clamp_force = max(1, min(abs(current_force)/10, 4))
+                clamp_force = max(1, min(abs(current_force)/15, 4))
             elif TCP_AXIS == 1:
                 current_force = data.wrench.force.y
                 # clamp the force to (0, 3)
-                clamp_force = max(1, min(abs(current_force)/10, 4))
+                clamp_force = max(1, min(abs(current_force)/15, 4))
             else:
                 current_force = data.wrench.force.z
                 # clamp the force to (0, 3)
-                clamp_force = max(1, min(abs(current_force)/10, 4))
+                clamp_force = max(1, min(abs(current_force - 487)/2.5, 6))
 
             # self.update_chart_tcp(current_force)
             self.publish_force(clamp_force)
+            rospy.sleep(0.5)
 
     def knob_state_callback(self, data) -> None: 
         if self.ur10_cart_cur is None:
@@ -606,7 +610,7 @@ class Ui_MainWindow(object):
                     self.knob_current_force = data.force.data
 
                     joints = list(self.ur10_joint_start)
-                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.02 * data.position.data
+                    joints[CONTROL_JOINT] = joints[CONTROL_JOINT] + 0.01 * (data.position.data - 30)
                     self.move_arm_joint(joints)
                     print("\r",joints, "                      ", end="")
                     return
@@ -651,8 +655,8 @@ class Ui_MainWindow(object):
 
         knob_command = KnobCommand()
         knob_command.header.stamp = rospy.Time.now()
-        knob_command.num_positions.data = 40
-        knob_command.position.data = 20
+        knob_command.num_positions.data = 60
+        knob_command.position.data = 30
         knob_command.position_width_radians.data = 10 * math.pi / 180
         knob_command.detent_strength_unit.data = 1.0
         knob_command.endstop_strength_unit.data = 1.0
