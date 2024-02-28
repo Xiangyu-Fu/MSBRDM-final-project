@@ -586,13 +586,11 @@ class Ui_MainWindow(object):
                 clamp_force = max(1, min(abs(current_force)/15, 4))
             else:
                 current_force = data.wrench.force.z
-                rospy.loginfo(current_force)
                 # clamp the force to (0, 3)
                 clamp_force = max(1, min(abs(current_force - 487)/2.5, 6))
 
             # self.update_chart_tcp(current_force)
             self.publish_force(clamp_force)
-            rospy.loginfo(clamp_force)
             rospy.sleep(0.5)
 
     def knob_state_callback(self, data) -> None: 

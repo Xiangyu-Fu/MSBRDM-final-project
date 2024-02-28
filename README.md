@@ -36,6 +36,25 @@ Move the arm to a specific pose [ON PROGRESS]:
 ```bash
 rosservice call /move_arm_cartesian "{x: 0.5, y: -0.2, z: 0.7, rx: 0.0, ry: 0.0, rz: 0.0}"
 ```
+## DEMO
+
+First tun the FT Sensor:
+```bash
+roslaunch tum_ics_schunk_netbox sensor_publisher.launch
+```
+Then run the KNOB GUI, You will see some warning, just ignore them. 
+**And DON't CLICK "Mode Publish" button until robot arm switch to the joint mode !!!**.
+```bash
+roslaunch knob_robot_control knob_interface.launch
+```
+
+Run the real robot
+```bash
+roslaunch tum_ics_ur_robot_manager robot_script_manager_ur10.launch
+roslaunch impedance_controller impedance_controller.launch
+```
+
+When robot arm finish the initial process and switch into joint control, then you can choose control mode and publish it in the GUI!
 
 ## Build
 
