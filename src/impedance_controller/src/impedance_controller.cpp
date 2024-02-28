@@ -99,15 +99,15 @@ namespace tum_ics_ur_robot_lli
 
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      // if (dist < 0.3)
-      // {
-      //   spline_period_ = 0.3; // avoid speed limit
-      // }
-      // else
-      // {
-      //   spline_period_ = dist * 20;
-      // }
-      spline_period_ = dist * 30;
+      if (dist < 0.3)
+      {
+        spline_period_ = 0.3; // avoid speed limit
+      }
+      else
+      {
+        spline_period_ = dist * 10;
+      }
+      // spline_period_ = dist * 30;
       
       // std::cout << "spline_period_: " << spline_period_ << std::endl;
 
@@ -385,7 +385,7 @@ namespace tum_ics_ur_robot_lli
       //////////////////////////////
       // CONTROL MODE SWITCH
       //////////////////////////////
-      if(time.tD() > init_period_ + 1 && control_mode_ == INIT)
+      if(time.tD() > init_period_ + 5 && control_mode_ == INIT)
         {
           control_mode_ = JOINT;
           // q_start_ = state.q;
@@ -526,16 +526,19 @@ namespace tum_ics_ur_robot_lli
         Qrp = Jef_pinv * Xr.vel();
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
-        double force_ = std::abs(latest_wrench.wrench.force.z - 485);
-        double max_range_ = std::abs(479-485);
-        double Level_ = (force_ / max_range_) * 5.0;
-        ROS_INFO_STREAM_THROTTLE(1, "Level_:"<< Level_);
-        // double Level_ =  0;
+        if (latest_wrench.wrench.force.z > 300)
+        {
+          double force_ = std::abs(latest_wrench.wrench.force.z - 485);
+          double max_range_ = std::abs(470-485);
+          double Level_ = (force_ / max_range_) * 5.0;
+          ROS_INFO_STREAM_THROTTLE(1, "Force:"<< force_);
+          ROS_INFO_STREAM_THROTTLE(1, "Level_:"<< Level_);
 
-        // Level=0: get 1
-        // Level=5: get 0
-        Qrp = (-0.2*Level_ + 1) * Qrp;
-        Qrpp = (-0.2*Level_ + 1) * Qrpp;
+          // Level=0: get 1
+          // Level=5: get 0
+          Qrp = (-0.2*Level_ + 1) * Qrp;
+          Qrpp = (-0.2*Level_ + 1) * Qrpp;
+        }
 
 
         Vector6d Sq = state.qp - Qrp;

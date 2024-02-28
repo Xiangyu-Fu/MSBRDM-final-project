@@ -486,13 +486,13 @@ class Ui_MainWindow(object):
             response = move_arm_cartesian(x, y, z, rx, ry, rz)
             return True
         except rospy.ServiceException as e:
-            rospy.logerr("Service call failed:", e)
+            rospy.logwarn("Service call failed:", e)
             return False
 
     def move_arm_joint(self, joints) -> bool:
         rospy.wait_for_service('move_arm_joint')
         if len(joints) != 6:
-            rospy.logerr("wrong joint nums")
+            rospy.logwarn("wrong joint nums")
             return False
         joint0 = joints[0]
         joint1 = joints[1]
@@ -505,7 +505,7 @@ class Ui_MainWindow(object):
             response = move_arm_joint(joint0, joint1, joint2, joint3, joint4, joint5)
             return True
         except rospy.ServiceException as e:
-            rospy.logerr("Service call failed:", e)
+            rospy.logwarn("Service call failed:", e)
             return False
 
     def move_arm_cartesian_home(self) -> None:
@@ -618,7 +618,7 @@ class Ui_MainWindow(object):
                     position[0] = round(self.ur10_cart_start.position.x, 3)
                     position[1] = round(self.ur10_cart_start.position.y, 3)
                     position[2] = round(self.ur10_cart_start.position.z, 3)
-                    position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.02 * self.knob_current_pos
+                    position[int(TCP_AXIS)] = position[int(TCP_AXIS)] + 0.02 * (self.knob_current_pos - 20)
                     self.move_arm_cartesian(position)
                     print("\r",position, "                      ", end="")
                 else:
@@ -651,8 +651,8 @@ class Ui_MainWindow(object):
 
         knob_command = KnobCommand()
         knob_command.header.stamp = rospy.Time.now()
-        knob_command.num_positions.data = 20
-        knob_command.position.data = 0
+        knob_command.num_positions.data = 40
+        knob_command.position.data = 20
         knob_command.position_width_radians.data = 10 * math.pi / 180
         knob_command.detent_strength_unit.data = 1.0
         knob_command.endstop_strength_unit.data = 1.0
