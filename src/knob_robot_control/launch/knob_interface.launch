@@ -1,0 +1,5 @@
+<launch>
+    <node name="rosserial_tcp_node" pkg="rosserial_python" type="serial_node.py" args="tcp" output="screen"/>
+
+    <node name="arm_control_client" pkg="knob_robot_control" type="qt5_gui.py" output="screen"/>
+</launch>

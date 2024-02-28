@@ -526,63 +526,74 @@ namespace tum_ics_ur_robot_lli
         Qrp = Jef_pinv * Xr.vel();
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
-        if (latest_wrench.wrench.force.z > 300)
-        {
-          double force_ = std::abs(latest_wrench.wrench.force.z - 485);
-          double max_range_ = std::abs(470-485);
-          double Level_ = (force_ / max_range_) * 5.0;
-          ROS_INFO_STREAM_THROTTLE(1, "Force:"<< force_);
-          ROS_INFO_STREAM_THROTTLE(1, "Level_:"<< Level_);
+        // if (latest_wrench.wrench.force.z > 300)
+        // if (true)
+        // {
+        //   double force_ = std::abs(latest_wrench.wrench.force.z - 485);
+        //   double max_range_ = std::abs(450-485);
+        //   double Level_ = (force_ / max_range_) * 5.0;
+        // //   ROS_INFO_STREAM_THROTTLE(1, "Force:"<< force_);
+        //   ROS_INFO_STREAM_THROTTLE(1, "Level_:"<< Level_);
 
-          // Level=0: get 1
-          // Level=5: get 0
-          Qrp = (-0.2*Level_ + 1) * Qrp;
-          Qrpp = (-0.2*Level_ + 1) * Qrpp;
-        }
+        // //   // Level=0: get 1
+        // //   // Level=5: get 0
+        // //   Qrp = (-0.2*Level_ + 1) * Qrp;
+        // //   Qrpp = (-0.2*Level_ + 1) * Qrpp;
+        // }
 
 
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -=  0.05 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
-      //   ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+        // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
 
-        // if (latest_wrench.wrench.force.z == 485)
-        // {
-        //   if (is_check_obst_ == false)
-        //   {
-        //     is_check_obst_ = true;
-        //     // X_impendance_endpoint_ = x_desired_cur.pos().linear() ;
-        //     // // todo
-        //     // X_impendance_endpoint_(2) -= 0.1;
-        //     X_impendance_endpoint_ << 0.47, -0.16, 0.51;
-        //   }
+#if 0
+        if (  std::abs(latest_wrench.wrench.force.z - 485) > 5  && is_check_obst_ == false)
+        // if (true)
+        {
+          is_check_obst_ = true;
+          X_impendance_endpoint_ = x_desired_cur.pos().linear() ;
+          // todo
+          X_impendance_endpoint_(2) -= 0.05;
+          // X_impendance_endpoint_ << 0.77, -0.16, 0.50;
+        }
+
+        if (  std::abs(latest_wrench.wrench.force.z - 485) < 0.5  )
+        {
+          is_check_obst_ = false;
+        }
+
+        if (is_check_obst_ == true)
+        {
+          ROS_INFO_STREAM_THROTTLE(1, "Model: Impedance");
+          ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+              << latest_wrench.wrench.force.x << ", " 
+              << latest_wrench.wrench.force.y << ", " 
+              << latest_wrench.wrench.force.z << "] ");
+          // Get the nullspace stuff 
+          //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+          auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
+          auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+          Vector6d task2 = Null_sp * tauTotalAvoid;
+
+          Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
           
-        //     ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
-        //         << latest_wrench.wrench.force.x << ", " 
-        //         << latest_wrench.wrench.force.y << ", " 
-        //         << latest_wrench.wrench.force.z << "] ");
-        //   // Get the nullspace stuff 
-        //   //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-        //   auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
-        //   auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-        //   Vector6d task2 = Null_sp * tauTotalAvoid;
+          // tau_avoiding.setZero();
+          // tau_avoiding(2) = task2(2)*100*6;
 
-        //   Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
-          
-        //   // tau_avoiding.setZero();
-        //   // tau_avoiding(2) = task2(2)*100*6;
+          // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+          tau_avoiding = tau_avoiding*500;
+          // ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
 
-        //   // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
-        //   tau_avoiding = tau_avoiding*500;
-        //   ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
+          tau += tau_avoiding;
 
-        //   tau += tau_avoiding;
-
-        //   ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
-            
-        // }
-
+          // ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
+        }else
+        {
+          ROS_INFO_STREAM_THROTTLE(1, "Model: Cartesian");
+        }
+#endif
         return tau;
       }
 
@@ -676,23 +687,29 @@ namespace tum_ics_ur_robot_lli
       double d;
       double d_min = 10e-5;
       T_i_0 = model_.Ti_0(state.q, j);
-      d = (X_red_ - T_i_0.position()).norm();  
+      Vector3d diff = X_red_ - T_i_0.position();
+      d = diff.norm();
+      // d = (X_red_ - T_i_0.position()).norm(); 
       if(d < d_min)
         d = d_min;
 
-      // if the ball is within the detection zone 
-      Vector3d current_spingK; 
-      // current_spingK << springK_[j] ,springK_[j] ,springK_[j] ; 
-      double SPRING = springK_[0]; // * 10e10;
+      // // if the ball is within the detection zone 
+      // Vector3d current_spingK; 
+      // // current_spingK << springK_[j] ,springK_[j] ,springK_[j] ; 
+      // double SPRING = springK_[0]; // * 10e10;
+      // current_spingK << SPRING, SPRING,SPRING;
 
-      current_spingK << SPRING, SPRING,SPRING;
       if(d < 0.5)
       {
-        F_red_i.x() = current_spingK.x() /  (X_red_ - T_i_0.position()).x();
-        F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
-        F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
+        double mag = 1/(d*d);
+        // F_red_i.x() = current_spingK.x() /  (X_red_ - T_i_0.position()).x();
+        // F_red_i.y() = current_spingK.y() /  (X_red_ - T_i_0.position()).y();
+        // F_red_i.z() = current_spingK.z() /  (X_red_ - T_i_0.position()).z();
+        // F_red_i.x() = - mag * 2 * diff(0);
+        // F_red_i.x() = - mag * 2 * diff(1);
+        F_red_i.x() = - mag * 2 * diff(2);
 
-        tau_red_i = model_.Ji_0(state.q,j).block(0, 0, 2, 5).transpose() * F_red_i;
+        tau_red_i = model_.Ji_0(state.q,j).block(0, 0, 0, 2).transpose() * F_red_i;
       }
       else    // else we can set everything to zero 
           tau_red_i.setZero(); 

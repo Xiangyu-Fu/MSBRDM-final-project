@@ -58,9 +58,9 @@ catkin build
 Check the IP addr
 ```bash
 roslaunch tum_ics_ur10_bringup bringUR10.launch
-roslaunch knob_robot_control rosserial.launch
-rosrun knob_robot_control qt5_gui.py 
+roslaunch knob_robot_control knob_interface.launch
 roslaunch impedance_controller impedance_controller.launch
+
 ```
 
 ## Run the Test Environment
@@ -122,7 +122,7 @@ rosrun knob_robot_control fake_ft_pub.py
 ```
 
 
-rosservice call /move_arm_cartesian "{x: 0.4779, y: -0.1639, z: 0.610, rx: 0.0, ry: 0.0, rz: 0.0}"
+rosservice call /move_arm_cartesian "{x: 0.81, y: -0.165, z: 0.758, rx: 0.0, ry: 0.0, rz: 0.0}"
 
 rosservice call /move_arm_cartesian "{x: 0.4779, y: -0.1639, z: 0.510, rx: 0.0, ry: 0.0, rz: 0.0}"
 

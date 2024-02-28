@@ -6,11 +6,11 @@ impedance_ctrl:
   gains_p_cart: [6, 6, 6, 1, 1, 1]
 
   #derivative
-  gains_d: [75, 75, 75, 73, 15, 5]
-  gains_d_cart: [5, 5, 5, 10, 10, 10]
+  gains_d: [100, 200, 200, 73, 15, 5]
+  gains_d_cart: [20, 20, 20, 20, 20, 20]
   #integral
-  gains_i: [1,5,5,2,1,1]
-  gains_i_cart: [1,1,1,1,1,1]
+  gains_i: [1,10,10,5,1,1]
+  gains_i_cart: [0.1,0.1,0.1,0.1,0.1,0.1]
   # Desired position in deg [J1, J2, J3, J4, J5, J6], e.g. [90, -45, 30, -70, 40, 40]
   # Home: [0, -90, 0, -90, 0, 0] 
   init_q: [0, -70, -110, -90, 90, 0]
@@ -19,7 +19,7 @@ impedance_ctrl:
   init_period: 5.0
 
   # adaptive controller
-  learning_rate: 50
+  learning_rate: 1.5
 
   # low pass filter
   low_pass_factor: 0.999
