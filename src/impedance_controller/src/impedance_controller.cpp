@@ -544,7 +544,7 @@ namespace tum_ics_ur_robot_lli
 
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
-        theta_ -=  0.05 * gamma_ * Yr.transpose() * Sq * dt;
+        theta_ -=  0.4 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
 

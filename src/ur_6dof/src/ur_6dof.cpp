@@ -16,8 +16,8 @@ namespace tum_ics_ur_model
         M_(cc::MatrixDof::Zero()),
         C_(cc::MatrixDof::Zero()),
         G_(cc::VectorDof::Zero()),
-        Theta_(45, 1),
-        Yr_(6, 45)  
+        Theta_(61, 1),
+        Yr_(6, 61)  
     {
     Theta_.setZero();
     Yr_.setZero();
