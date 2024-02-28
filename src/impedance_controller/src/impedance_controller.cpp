@@ -617,12 +617,13 @@ namespace tum_ics_ur_robot_lli
         Force(2) = std::abs(latest_wrench.wrench.force.z - 485);
         tauTotalAvoid = model_.Ji_0(state.q,5).block(0, 0, 0, 2).transpose() * Force;
 
-        auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-        Vector6d task2 = Null_sp * tauTotalAvoid;
-        Vector6d tau_avoiding = task2;
+        // auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+        // Vector6d task2 = Null_sp * tauTotalAvoid;
+        // Vector6d tau_avoiding = task2;
+        Vector6d tau_avoiding = tauTotalAvoid;
 
         ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
-        tau_avoiding = tau_avoiding*40*3;
+        // tau_avoiding = tau_avoiding*40*3;
         ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
 
         tau += tau_avoiding;
