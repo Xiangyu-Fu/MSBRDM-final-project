@@ -2,6 +2,7 @@
 #include <tum_ics_ur_robot_msgs/ControlData.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <cmath>
 
 namespace tum_ics_ur_robot_lli
 {
@@ -533,47 +534,57 @@ namespace tum_ics_ur_robot_lli
         Qrp = Jef_pinv * Xr.vel();
         Qrpp = Jef_pinv * (Xr.acc() - Jef_dot * state.qp);
 
+        // double force_ = std::abs(latest_wrench.wrench.force.z - 485);
+        // double max_range_ = 50.0;
+        // double Level_ = (force_ / max_range_) * 5.0;
+        double Level_ =  0;
+
+        // Level=0: get 1
+        // Level=5: get 0
+        Qrp = (-0.2*Level_ + 1) * Qrp;
+        Qrpp = (-0.2*Level_ + 1) * Qrpp;
+
         Vector6d Sq = state.qp - Qrp;
         const auto& Yr = model_.Yr_function(state.q, state.qp, Qrp, Qrpp);
         theta_ -=  0.05 * gamma_ * Yr.transpose() * Sq * dt;
         tau = -Kd_cart_ * Sq + Yr * theta_;
         // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
 
-        if (latest_wrench.wrench.force.z == 485)
-        {
-          if (is_check_obst_ == false)
-          {
-            is_check_obst_ = true;
-            // X_impendance_endpoint_ = x_desired_cur.pos().linear() ;
-            // // todo
-            // X_impendance_endpoint_(2) -= 0.1;
-            X_impendance_endpoint_ << 0.47, -0.16, 0.51;
-          }
+        // if (latest_wrench.wrench.force.z == 485)
+        // {
+        //   if (is_check_obst_ == false)
+        //   {
+        //     is_check_obst_ = true;
+        //     // X_impendance_endpoint_ = x_desired_cur.pos().linear() ;
+        //     // // todo
+        //     // X_impendance_endpoint_(2) -= 0.1;
+        //     X_impendance_endpoint_ << 0.47, -0.16, 0.51;
+        //   }
           
-            ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
-                << latest_wrench.wrench.force.x << ", " 
-                << latest_wrench.wrench.force.y << ", " 
-                << latest_wrench.wrench.force.z << "] ");
-          // Get the nullspace stuff 
-          //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
-          auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
-          auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
-          Vector6d task2 = Null_sp * tauTotalAvoid;
+        //     ROS_INFO_STREAM_THROTTLE(1, "Received force: [" 
+        //         << latest_wrench.wrench.force.x << ", " 
+        //         << latest_wrench.wrench.force.y << ", " 
+        //         << latest_wrench.wrench.force.z << "] ");
+        //   // Get the nullspace stuff 
+        //   //Vector3d X_avoidance_point = x_desired_cur.pos().linear();
+        //   auto tauTotalAvoid = computeImpedanceTau(state, X_impendance_endpoint_, 5);//Fix
+        //   auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
+        //   Vector6d task2 = Null_sp * tauTotalAvoid;
 
-          Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
+        //   Vector6d tau_avoiding = task2; //cartesianAvoiding(state, x_desired_cur, dt);
           
-          // tau_avoiding.setZero();
-          // tau_avoiding(2) = task2(2)*100*6;
+        //   // tau_avoiding.setZero();
+        //   // tau_avoiding(2) = task2(2)*100*6;
 
-          // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
-          tau_avoiding = tau_avoiding*500;
-          ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
+        //   // ROS_INFO_STREAM_THROTTLE(1, "tau:"<< tau);
+        //   tau_avoiding = tau_avoiding*500;
+        //   ROS_INFO_STREAM_THROTTLE(1, "tau_avoiding:"<< tau_avoiding);
 
-          tau += tau_avoiding;
+        //   tau += tau_avoiding;
 
-          ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
+        //   ROS_INFO_STREAM_THROTTLE(1, "tau_new:"<< tau);
             
-        }
+        // }
 
         return tau;
       }
