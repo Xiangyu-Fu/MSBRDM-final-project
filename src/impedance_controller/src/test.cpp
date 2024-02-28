@@ -98,14 +98,7 @@ namespace tum_ics_ur_robot_lli
 
       
       double dist = (ee_goal_.pos().linear() - ee_start_.pos().linear()).norm();
-      if (dist < 0.3)
-      {
-        spline_period_ = 0.3; // avoid speed limit
-      }
-      else
-      {
-        spline_period_ = dist * 20;
-      }
+<<<<<<< HEAD
       // if (dist < 0.3)
       // {
       //   spline_period_ = 0.3; // avoid speed limit
@@ -115,6 +108,16 @@ namespace tum_ics_ur_robot_lli
       //   spline_period_ = dist * 3;
       // }
       spline_period_ = dist * 3;
+=======
+      if (dist < 0.3)
+      {
+        spline_period_ = 0.3; // avoid speed limit
+      }
+      else
+      {
+        spline_period_ = dist * 20;
+      }
+>>>>>>> 8713bdb526a36372fe11d68088b285951eb5904f
       
       // std::cout << "spline_period_: " << spline_period_ << std::endl;
 

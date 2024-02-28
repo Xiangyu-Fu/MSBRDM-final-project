@@ -141,15 +141,16 @@
 <ul class="contains-task-list">
 <li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> Add the ROS Service for Joint Control</li>
 <li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> VS Code debugger for the ROS nodes</li>
-<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> Add Gravity Compensation for joint control</li>
-<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> Add the ROS Service for Cartesian Control</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> Add the ROS Service for Cartesian Control</li>
 <li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> impedance controller for the end-effector</li>
 <li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> addmitance controller for the end-effector</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> orientation spline</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> Fix vibration of cartesian control</li>
 </ul>
 <h3 id="bugs">BUGS</h3>
 <ul class="contains-task-list">
-<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> Vibrations when change the control mode</li>
-<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox"> EE position is not accurate</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> Vibrations when change the control mode</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox"> EE position is not accurate</li>
 </ul>
 <h2 id="impedance-controller">Impedance Controller</h2>
 <h3 id="run-the-impedance-controller">Run the Impedance Controller</h3>
@@ -178,10 +179,61 @@ sudo dpkg -i ros*
 <blockquote>
 <p>Note: If you face any issues with the build, please first see the <a href="https://gitlab.lrz.de/msbrdm/msbrdm-lecture-2023/-/issues/35">Issue #35</a>.</p>
 </blockquote>
+<h2 id="knob">Knob</h2>
+<p>Check the IP addr</p>
+<pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
+roslaunch knob_robot_control rosserial.launch
+rosrun knob_robot_control qt5_gui.py 
+roslaunch impedance_controller impedance_controller.launch
+</code></pre>
 <h2 id="run-the-test-environment">Run the Test Environment</h2>
 <p>Please follow the following commands:</p>
 <pre><code class="language-bash">roslaunch tum_ics_ur10_bringup bringUR10.launch
 roslaunch tum_ics_ur10_controller_tutorial simple_effort_controller.launch
+</code></pre>
+<h2 id="force-torque-sensor">Force Torque Sensor</h2>
+<pre><code class="language-bash">roslaunch tum_ics_schunk_netbox sensor_publisher.launch
+rostopic <span class="hljs-built_in">echo</span> /schunk_netbox/raw 
+header: 
+  <span class="hljs-built_in">seq</span>: 27494
+  stamp: 
+    secs: 1708778150
+    nsecs: 385334359
+  frame_id: <span class="hljs-string">&quot;ft_sensor_link&quot;</span>
+wrench: 
+  force: 
+    x: -131.479277
+    y: -76.275814
+    z: 485.809591
+  torque: 
+    x: -0.78713
+    y: -6.932118
+    z: -4.1215
+---
+
+rostopic info /schunk_netbox/raw 
+Type: geometry_msgs/WrenchStamped
+
+Publishers: 
+ * /schunk_netbox/schunk_netbox (http://redball:36389/)
+
+Subscribers: None
+
+
+</code></pre>
+<h2 id="run-the-real-ur">Run the Real Ur</h2>
+<pre><code class="language-bash">roscore
+
+roslaunch tum_ics_ur10_bringup bringUR10.launch
+
+roslaunch tum_ics_ur_robot_manager robot_script_manager_ur10.launch
+
+roslaunch impedance_controller impedance_controller.launch
+
+roslaunch tum_ics_schunk_netbox sensor_publisher.launch
+
+rosrun knob_robot_control fake_ft_pub.py
+
 </code></pre>
 
             

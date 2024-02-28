@@ -18,11 +18,13 @@ namespace tum_ics_ur_robot_lli
     class ImpedanceControl : public ControlEffort
     {
     public:
-      enum Mode {INIT, JOINT, CARTESIAN, IMPEDANCE};
+      enum Mode {INIT, JOINT, CARTESIAN};
       
     private:
       bool is_first_iter_;
+      bool is_check_obst_;
 
+      Vector3d X_impendance_endpoint_;
       Vector6d q_start_;
       JointState q_init_;
       JointState q_home_;
@@ -72,10 +74,11 @@ namespace tum_ics_ur_robot_lli
       Matrix6d Kp_cart_;
       Matrix6d Kd_cart_;
       Matrix6d Ki_cart_;
-      Vector6d cart_error_;
       tum_ics_ur_model::URModel model_; 
       cc::CartesianState ee_start_, ee_goal_;
       cc::CartesianState X_, Xd_, Xr_;
+      Vector6d cart_error_;
+      Vector6d cart_dot_error_;
       cc::CartesianState x_desired_;
 
       // params for Regressor

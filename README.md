@@ -119,3 +119,27 @@ roslaunch tum_ics_schunk_netbox sensor_publisher.launch
 rosrun knob_robot_control fake_ft_pub.py
 
 ```
+
+
+
+### Yanbing
+
+catkin build impedance_controller
+
+roslaunch tum_ics_ur10_bringup bringUR10.launch
+
+roslaunch impedance_controller impedance_controller.launch
+
+rosservice call /move_arm_cartesian "{x: 0.47, y: -0.16, z: 0.71, rx: 0.0, ry: 0.0, rz: 0.0}"
+
+rosrun knob_robot_control fake_ft_pub.py
+
+rostopic echo /schunk_netbox/raw 
+
+z: 0.81~0.51
+为了好理解，省去了-
+**没有force情况**
+tau(2) < 43/40: 向上移动（35）
+tau(2) > 43/40: 向下移动（47）
+=> 因此，force情况下，
+
