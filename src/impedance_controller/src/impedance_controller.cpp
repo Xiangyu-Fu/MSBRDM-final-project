@@ -612,9 +612,9 @@ namespace tum_ics_ur_robot_lli
             << latest_wrench.wrench.force.z << "] ");
         Vector3d Force;
         Vector6d tauTotalAvoid;
-        Force(0) = latest_wrench.wrench.force.x+131;
-        Force(1) = latest_wrench.wrench.force.y+76;
-        Force(2) = std::abs(latest_wrench.wrench.force.z - 485);
+        Force(0) = -(latest_wrench.wrench.force.x+131);
+        Force(1) = -(latest_wrench.wrench.force.y+76);
+        Force(2) = -(latest_wrench.wrench.force.z - 485);//fix :not 
         tauTotalAvoid = model_.Ji_0(state.q,5).block(0, 0, 0, 2).transpose() * Force;
 
         // auto Null_sp = Matrix6d::Identity() - Jef.transpose()  *  Jef_pinv.transpose();
