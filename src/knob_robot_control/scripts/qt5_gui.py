@@ -587,7 +587,7 @@ class Ui_MainWindow(object):
             else:
                 current_force = data.wrench.force.z
                 # clamp the force to (0, 3)
-                clamp_force = max(1, min(abs(current_force - 487)/2.5, 6))
+                clamp_force = max(1, min(abs(current_force - 487)/1.8, 6))
 
             # self.update_chart_tcp(current_force)
             self.publish_force(clamp_force)
