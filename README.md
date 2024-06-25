@@ -1,17 +1,9 @@
 # MSBRDM FINAL PROJECT
 
-### TODO
-- [x] Add the ROS Service for Joint Control
-- [x] VS Code debugger for the ROS nodes
-- [x] Add the ROS Service for Cartesian Control
-- [ ] impedance controller for the end-effector
-- [ ] addmitance controller for the end-effector
-- [ ] orientation spline
-- [ ] Fix vibration of cartesian control
+Click to see our demo video:
 
-### BUGS
-- [x] Vibrations when change the control mode
-- [x] EE position is not accurate
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/0inFihFG_cE/0.jpg)](https://youtu.be/0inFihFG_cE)
+
 
 ## Impedance Controller
 ### Run the Impedance Controller
