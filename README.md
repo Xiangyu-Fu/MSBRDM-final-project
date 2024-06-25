@@ -2,8 +2,7 @@
 
 Click to see our demo video:
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/0inFihFG_cE/0.jpg)](https://youtu.be/0inFihFG_cE)
-
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/0inFihFG_cE/1.jpg)](https://youtu.be/0inFihFG_cE)
 
 ## Impedance Controller
 ### Run the Impedance Controller
